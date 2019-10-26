@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
 project(CavalierContoursDev)
 include_directories(CavalierContours/include)
 add_subdirectory(interactiveui)
+add_subdirectory(benchmarks)
