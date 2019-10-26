@@ -1,2 +1,3 @@
 project(CavalierContoursDev)
-add_subdirectory(interactive_ui)
+include_directories(CavalierContours/include)
+add_subdirectory(interactiveui)

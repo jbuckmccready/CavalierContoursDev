@@ -1,0 +1,3 @@
+[submodule "CavalierContours"]
+	path = CavalierContours
+	url = https://github.com/jbuckmccready/CavalierContours.git
