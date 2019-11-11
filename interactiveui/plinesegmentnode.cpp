@@ -16,13 +16,13 @@ void PlineSegmentNode::updateGeometry(const cavc::PlineVertex<double> &v1,
     auto endAngle = angle(arc.center, v2.pos());
     double deltaAngle = std::abs(utils::deltaAngle(startAngle, endAngle));
 
-    std::size_t vertexCount =
+    std::size_t segmentCount =
         static_cast<std::size_t>(std::ceil(arc.radius * deltaAngle * uiScale));
     const double sweepAngle = v1.bulge() > 0 ? deltaAngle : -deltaAngle;
-    m_geometry.allocate(static_cast<int>(vertexCount));
+    m_geometry.allocate(static_cast<int>(segmentCount + 1));
 
-    for (std::size_t i = 0; i <= vertexCount; ++i) {
-      double angle = static_cast<double>(i) / vertexCount * sweepAngle + startAngle;
+    for (std::size_t i = 0; i <= segmentCount; ++i) {
+      double angle = static_cast<double>(i) / segmentCount * sweepAngle + startAngle;
       m_geometry.vertexDataAsPoint2D()[i].set(
           static_cast<float>(arc.radius * std::cos(angle) + arc.center.x()),
           static_cast<float>(arc.radius * std::sin(angle) + arc.center.y()));

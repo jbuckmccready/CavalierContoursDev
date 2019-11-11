@@ -13,6 +13,7 @@ public:
 
 private slots:
     void simpleRepeatedOffsets();
+    void foldedRepeatedOffsets();
 
 private:
   Polyline<double> pline1;
@@ -47,14 +48,44 @@ Benchmarks::~Benchmarks()
 
 void Benchmarks::simpleRepeatedOffsets()
 {
-  const double offsetIncr = 0.5;
+  const double offsetIncr = 0.1;
 
   QBENCHMARK {
-    for (std::size_t i = 1; i < 41; ++i) {
+    for (std::size_t i = 1; i < 201; ++i) {
       double offset = i * offsetIncr;
       auto results = paralleOffset(pline1, offset, 1);
     }
   }
+}
+
+void Benchmarks::foldedRepeatedOffsets()
+{
+  const double offsetIncr = 0.1;
+  double origPlineA = area(pline1);
+
+  QBENCHMARK {
+    std::vector<Polyline<double>> prevOffsets = { pline1 };
+    std::vector<Polyline<double>> newOffsets;
+    for (std::size_t i = 0; i < 200; ++i) {
+      newOffsets = std::vector<Polyline<double>>();
+      for (auto const &prevOffs : prevOffsets) {
+          auto results = paralleOffset(prevOffs, offsetIncr, 1);
+          newOffsets.insert(newOffsets.end(), std::make_move_iterator(results.begin()), std::make_move_iterator(results.end()));
+      }
+
+      prevOffsets = std::move(newOffsets);
+      prevOffsets.erase(std::remove_if(prevOffsets.begin(), prevOffsets.end(),
+                                       [&](const auto &pline) {
+                                         double a = area(pline);
+                                         return (a > 0 != origPlineA > 0) || std::abs(a) < 1e-4;
+                                       }),
+                        prevOffsets.end());
+      if (prevOffsets.size() == 0) {
+        break;
+      }
+    }
+  }
+
 }
 
 QTEST_APPLESS_MAIN(Benchmarks)

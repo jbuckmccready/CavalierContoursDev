@@ -28,7 +28,10 @@ class PlineOffsetAlgorithmView : public QQuickItem {
   Q_PROPERTY(FinishedPolyline finishedPolyline READ finishedPolyline WRITE setFinishedPolyline
                  NOTIFY finishedPolylineChanged)
   Q_PROPERTY(double plineOffset READ plineOffset WRITE setPlineOffset NOTIFY plineOffsetChanged)
-  Q_PROPERTY(int repeatOffsetCount READ offsetCount WRITE setOffsetCount NOTIFY repeatOffsetCountChanged)
+  Q_PROPERTY(
+      int repeatOffsetCount READ offsetCount WRITE setOffsetCount NOTIFY repeatOffsetCountChanged)
+  Q_PROPERTY(bool showEndPointIntersectCircles READ showEndPointIntersectCircles WRITE
+                 setShowEndPointIntersectCircles NOTIFY showEndPointIntersectCirclesChanged)
 public:
   enum TargetPolyline { None, OriginalPolyline, RawOffsetPolyline };
   Q_ENUM(TargetPolyline)
@@ -67,6 +70,9 @@ public:
   int offsetCount() const;
   void setOffsetCount(int offsetCount);
 
+  bool showEndPointIntersectCircles() const;
+  void setShowEndPointIntersectCircles(bool showEndPointIntersectCircles);
+
 signals:
   void interactingChanged(bool interacting);
   void showRawOffsetSegmentsChanged(bool showRawOffsetSegments);
@@ -78,6 +84,7 @@ signals:
   void selfIntersectsTargetChanged(TargetPolyline selfIntersectsTarget);
   void finishedPolylineChanged(FinishedPolyline finishedPolyline);
   void repeatOffsetCountChanged(int repeatOffsetCount);
+  void showEndPointIntersectCirclesChanged(bool showEndPointIntersectCircles);
 
 protected:
   QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
@@ -97,6 +104,7 @@ private:
   SpatialIndexBoundingBoxesNode *m_boundingBoxesNode;
   QSGOpacityNode *m_slicesParentNode;
   QSGOpacityNode *m_repeatOffsetsParentNode;
+  QSGOpacityNode *m_endPointIntersectCirclesNode;
 
   // members for mapping "real" coordinates to UI coordinates
   double m_uiScaleFactor;
@@ -120,6 +128,7 @@ private:
   TargetPolyline m_spatialIndexTarget;
   TargetPolyline m_selfIntersectsTarget;
   FinishedPolyline m_finishedPolyline;
+  bool m_showEndPointIntersectCircles;
 };
 
 #endif // PLINEOFFSETALGORITHMVIEW_H

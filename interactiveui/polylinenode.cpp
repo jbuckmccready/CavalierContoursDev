@@ -28,12 +28,12 @@ void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double ui
     auto startAngle = angle(arc.center, v1.pos());
     auto endAngle = angle(arc.center, v2.pos());
     double deltaAngle = std::abs(utils::deltaAngle(startAngle, endAngle));
-    std::size_t vertexCount =
+    std::size_t segmentCount =
         static_cast<std::size_t>(std::ceil(arc.radius * deltaAngle * uiScale));
     const double sweepAngle = v1.bulge() > 0 ? deltaAngle : -deltaAngle;
 
-    for (std::size_t i = 0; i <= vertexCount; ++i) {
-      double angle = static_cast<double>(i) / vertexCount * sweepAngle + startAngle;
+    for (std::size_t i = 0; i <= segmentCount; ++i) {
+      double angle = static_cast<double>(i) / segmentCount * sweepAngle + startAngle;
       m_vertexesBuffer.emplace_back(
           static_cast<float>(arc.radius * std::cos(angle) + arc.center.x()),
           static_cast<float>(arc.radius * std::sin(angle) + arc.center.y()));
