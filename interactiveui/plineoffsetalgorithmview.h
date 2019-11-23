@@ -19,6 +19,8 @@ class PlineOffsetAlgorithmView : public QQuickItem {
                  NOTIFY showRawOffsetSegmentsChanged)
   Q_PROPERTY(bool showRawOffsetPolyline READ showRawOffsetPolyline WRITE setShowRawOffsetPolyline
                  NOTIFY showRawOffsetPolylineChanged)
+  Q_PROPERTY(bool showDualRawOffsetPolyline READ showDualRawOffsetPolyline WRITE
+                 setShowDualRawOffsetPolyline NOTIFY showDualRawOffsetPolylineChanged)
   Q_PROPERTY(bool showRawOffsetPlineVertexes READ showRawOffsetPlineVertexes WRITE
                  setShowRawOffsetPlineVertexes NOTIFY showRawOffsetPlineVertexesChanged)
   Q_PROPERTY(TargetPolyline spatialIndexTarget READ spatialIndexTarget WRITE setSpatialIndexTarget
@@ -73,6 +75,9 @@ public:
   bool showEndPointIntersectCircles() const;
   void setShowEndPointIntersectCircles(bool showEndPointIntersectCircles);
 
+  bool showDualRawOffsetPolyline() const;
+  void setShowDualRawOffsetPolyline(bool showDualRawOffsetPolyline);
+
 signals:
   void interactingChanged(bool interacting);
   void showRawOffsetSegmentsChanged(bool showRawOffsetSegments);
@@ -85,6 +90,7 @@ signals:
   void finishedPolylineChanged(FinishedPolyline finishedPolyline);
   void repeatOffsetCountChanged(int repeatOffsetCount);
   void showEndPointIntersectCirclesChanged(bool showEndPointIntersectCircles);
+  void showDualRawOffsetPolylineChanged(bool showDualRawOffsetPolyline);
 
 protected:
   QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
@@ -99,6 +105,7 @@ private:
   cavc::Polyline<double> m_inputPolyline;
   PolylineNode *m_origPolylineNode;
   PolylineNode *m_rawOffsetPolylineNode;
+  PolylineNode *m_dualRawOffsetPolylineNode;
   RawOffsetSegmentsNode *m_untrimmedSegmentsParentNode;
   QSGGeometryNode *m_selfIntersectsNode;
   SpatialIndexBoundingBoxesNode *m_boundingBoxesNode;
@@ -129,6 +136,7 @@ private:
   TargetPolyline m_selfIntersectsTarget;
   FinishedPolyline m_finishedPolyline;
   bool m_showEndPointIntersectCircles;
+  bool m_showDualRawOffsetPolyline;
 };
 
 #endif // PLINEOFFSETALGORITHMVIEW_H

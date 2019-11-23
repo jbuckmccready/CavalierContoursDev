@@ -8,37 +8,32 @@
 #include <QSGTransformNode>
 using namespace cavc;
 
-namespace {
-QSGGeometryNode *createSimpleGeomNode(int vertexCount, QColor const &color, float width,
-                                      QSGGeometry::DrawingMode mode) {
-  QSGGeometryNode *node = new QSGGeometryNode();
-  node->setFlag(QSGNode::OwnedByParent);
-
-  QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertexCount);
-  geometry->setDrawingMode(mode);
-  geometry->setLineWidth(width);
-  node->setGeometry(geometry);
-  node->setFlag(QSGNode::OwnsGeometry);
-
-  QSGFlatColorMaterial *material = new QSGFlatColorMaterial();
-  material->setColor(color);
-  node->setMaterial(material);
-  node->setFlag(QSGNode::OwnsMaterial);
-
-  return node;
-}
-}
-
 PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
-    : QQuickItem(parent), m_origPolylineNode(nullptr), m_rawOffsetPolylineNode(nullptr),
-      m_untrimmedSegmentsParentNode(nullptr), m_selfIntersectsNode(nullptr),
-      m_boundingBoxesNode(nullptr), m_slicesParentNode(nullptr), m_repeatOffsetsParentNode(nullptr),
-      m_endPointIntersectCirclesNode(nullptr), m_uiScaleFactor(20), m_globalMouseDownPoint(),
-      m_vertexGrabbed(std::numeric_limits<std::size_t>::max()), m_interacting(false),
-      m_showOrigPlineVertexes(true), m_showRawOffsetSegments(false), m_showRawOffsetPolyline(false),
-      m_showRawOffsetPlineVertexes(false), m_plineOffset(0.5), m_repeatOffsetCount(0),
-      m_spatialIndexTarget(None), m_selfIntersectsTarget(None), m_finishedPolyline(NoFinishedPline),
-      m_showEndPointIntersectCircles(false) {
+    : QQuickItem(parent),
+      m_origPolylineNode(nullptr),
+      m_rawOffsetPolylineNode(nullptr),
+      m_dualRawOffsetPolylineNode(nullptr),
+      m_untrimmedSegmentsParentNode(nullptr),
+      m_selfIntersectsNode(nullptr),
+      m_boundingBoxesNode(nullptr),
+      m_slicesParentNode(nullptr),
+      m_repeatOffsetsParentNode(nullptr),
+      m_endPointIntersectCirclesNode(nullptr),
+      m_uiScaleFactor(20),
+      m_globalMouseDownPoint(),
+      m_vertexGrabbed(std::numeric_limits<std::size_t>::max()),
+      m_interacting(false),
+      m_showOrigPlineVertexes(true),
+      m_showRawOffsetSegments(false),
+      m_showRawOffsetPolyline(false),
+      m_showRawOffsetPlineVertexes(false),
+      m_plineOffset(0.5),
+      m_repeatOffsetCount(0),
+      m_spatialIndexTarget(None),
+      m_selfIntersectsTarget(None),
+      m_finishedPolyline(NoFinishedPline),
+      m_showEndPointIntersectCircles(false),
+      m_showDualRawOffsetPolyline(false) {
 
   setFlag(ItemHasContents, true);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -208,6 +203,19 @@ void PlineOffsetAlgorithmView::setShowEndPointIntersectCircles(bool showEndPoint
   emit showEndPointIntersectCirclesChanged(m_showEndPointIntersectCircles);
 }
 
+bool PlineOffsetAlgorithmView::showDualRawOffsetPolyline() const {
+  return m_showDualRawOffsetPolyline;
+}
+
+void PlineOffsetAlgorithmView::setShowDualRawOffsetPolyline(bool showDualRawOffsetPolyline) {
+  if (m_showDualRawOffsetPolyline == showDualRawOffsetPolyline)
+    return;
+
+  m_showDualRawOffsetPolyline = showDualRawOffsetPolyline;
+  update();
+  emit showDualRawOffsetPolylineChanged(m_showDualRawOffsetPolyline);
+}
+
 void PlineOffsetAlgorithmView::setInteracting(bool interacting) {
   if (m_interacting == interacting)
     return;
@@ -230,6 +238,11 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     m_rawOffsetPolylineNode->setFlag(QSGNode::OwnedByParent);
     m_rawOffsetPolylineNode->setColor(Qt::darkGreen);
     rootNode->appendChildNode(m_rawOffsetPolylineNode);
+
+    m_dualRawOffsetPolylineNode = new PolylineNode();
+    m_dualRawOffsetPolylineNode->setFlag(QSGNode::OwnedByParent);
+    m_dualRawOffsetPolylineNode->setColor(Qt::darkMagenta);
+    rootNode->appendChildNode(m_dualRawOffsetPolylineNode);
 
     m_untrimmedSegmentsParentNode = new RawOffsetSegmentsNode();
     m_untrimmedSegmentsParentNode->setOpacity(0);
@@ -254,8 +267,8 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   m_origPolylineNode->setVertexesVisible(m_showOrigPlineVertexes);
   m_origPolylineNode->updateGeometry(prunedPline, m_uiScaleFactor);
 
-  cavc::Polyline<double> rawOffsetPline;
   // raw offset polyline
+  cavc::Polyline<double> rawOffsetPline;
   if (m_showRawOffsetPolyline) {
     rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset, 1);
     m_rawOffsetPolylineNode->setIsVisible(true);
@@ -263,6 +276,17 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, m_uiScaleFactor);
   } else {
     m_rawOffsetPolylineNode->setIsVisible(false);
+  }
+
+  // dual raw offset polyline
+  cavc::Polyline<double> dualRawOffsetPline;
+  if (m_showRawOffsetPolyline && m_showDualRawOffsetPolyline) {
+    dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset, 1);
+    m_dualRawOffsetPolylineNode->setIsVisible(true);
+    m_dualRawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
+    m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, m_uiScaleFactor);
+  } else {
+    m_dualRawOffsetPolylineNode->setIsVisible(false);
   }
 
   // raw offset segments
@@ -289,13 +313,17 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     }
     auto spatialIndex = createApproxSpatialIndex(rawOffsetPline);
     allSelfIntersects(rawOffsetPline, selfIntersects, spatialIndex);
+
+    if (dualRawOffsetPline.size() != 0) {
+      intersects(rawOffsetPline, dualRawOffsetPline, spatialIndex, selfIntersects);
+    }
   } break;
   }
 
   if (selfIntersects.size() != 0) {
     if (!m_selfIntersectsNode) {
-      m_selfIntersectsNode = createSimpleGeomNode(static_cast<int>(selfIntersects.size()),
-                                                  Qt::darkCyan, 8, QSGGeometry::DrawPoints);
+      m_selfIntersectsNode = gh::createSimpleGeomNode(static_cast<int>(selfIntersects.size()),
+                                                      Qt::darkCyan, 8, QSGGeometry::DrawPoints);
       rootNode->appendChildNode(m_selfIntersectsNode);
     } else {
       m_selfIntersectsNode->geometry()->allocate(static_cast<int>(selfIntersects.size()));
@@ -320,9 +348,9 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         static_cast<QSGGeometryNode *>(m_endPointIntersectCirclesNode->firstChild());
     QSGGeometryNode *endNode;
     if (!startNode) {
-      startNode = createSimpleGeomNode(50, QColor("orange"), 1, QSGGeometry::DrawLineLoop);
+      startNode = gh::createSimpleGeomNode(50, QColor("orange"), 1, QSGGeometry::DrawLineLoop);
       m_endPointIntersectCirclesNode->appendChildNode(startNode);
-      endNode = createSimpleGeomNode(50, QColor("orange"), 1, QSGGeometry::DrawLineLoop);
+      endNode = gh::createSimpleGeomNode(50, QColor("orange"), 1, QSGGeometry::DrawLineLoop);
       m_endPointIntersectCirclesNode->appendChildNode(endNode);
     } else {
       endNode = static_cast<QSGGeometryNode *>(startNode->nextSibling());
@@ -384,8 +412,11 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     m_slicesParentNode->setOpacity(1);
     PolylineNode *sliceNode = static_cast<PolylineNode *>(m_slicesParentNode->firstChild());
     std::size_t sliceIndex = 0;
-    auto rawOffsetDual = createRawOffsetPline(prunedPline, -m_plineOffset, 1);
-    auto slices = dualSliceAtIntersects(prunedPline, rawOffsetPline, rawOffsetDual, m_plineOffset);
+    if (dualRawOffsetPline.size() == 0) {
+      dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset, 1);
+    }
+    auto slices =
+        dualSliceAtIntersects(prunedPline, rawOffsetPline, dualRawOffsetPline, m_plineOffset);
 
     auto addPline = [&](cavc::Polyline<double> const &pline) {
       if (!sliceNode) {

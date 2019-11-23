@@ -4,7 +4,9 @@
 using namespace cavc;
 
 PolylineNode::PolylineNode()
-    : m_vertexesVisible(false), m_vertexesPointNode(nullptr), m_vertexesColor(Qt::red),
+    : m_vertexesVisible(false),
+      m_vertexesPointNode(nullptr),
+      m_vertexesColor(Qt::red),
       m_isVisible(true),
       m_geometry(QSGGeometry::defaultAttributes_Point2D(), 0, 0, GL_UNSIGNED_INT) {
   m_geometry.setLineWidth(1);

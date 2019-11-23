@@ -225,6 +225,15 @@ Window {
 
           CheckBox {
             enabled: showRawOffsetCheckBox.checked
+            text: "Show Dual Raw Offset Polyline"
+            checked: polylineView.showDualRawOffsetPolyline
+            onCheckedChanged: {
+              polylineView.showDualRawOffsetPolyline = checked;
+            }
+          }
+
+          CheckBox {
+            enabled: showRawOffsetCheckBox.checked
             text: "Show Raw Offset Polyline Vertexes"
             checked: polylineView.showRawOffsetPlineVertexes
             onCheckedChanged: {

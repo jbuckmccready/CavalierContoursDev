@@ -20,6 +20,7 @@ include_directories(CavalierContours/include)
 add_executable(InteractiveUI
   main.cpp
   plineoffsetalgorithmview.cpp
+  graphicshelpers.cpp
   polylinenode.cpp
   spatialindexboundingboxesnode.cpp
   flatcolorgeometrynode.cpp
