@@ -53,7 +53,7 @@ void Benchmarks::simpleRepeatedOffsets()
   QBENCHMARK {
     for (std::size_t i = 1; i < 201; ++i) {
       double offset = i * offsetIncr;
-      auto results = paralleOffset(pline1, offset, 1);
+      auto results = paralleOffset(pline1, offset);
     }
   }
 }
@@ -69,7 +69,7 @@ void Benchmarks::foldedRepeatedOffsets()
     for (std::size_t i = 0; i < 200; ++i) {
       newOffsets = std::vector<Polyline<double>>();
       for (auto const &prevOffs : prevOffsets) {
-          auto results = paralleOffset(prevOffs, offsetIncr, 1);
+          auto results = paralleOffset(prevOffs, offsetIncr);
           newOffsets.insert(newOffsets.end(), std::make_move_iterator(results.begin()), std::make_move_iterator(results.end()));
       }
 

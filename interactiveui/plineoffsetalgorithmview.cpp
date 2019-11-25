@@ -270,7 +270,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // raw offset polyline
   cavc::Polyline<double> rawOffsetPline;
   if (m_showRawOffsetPolyline) {
-    rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset, 1);
+    rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
     m_rawOffsetPolylineNode->setIsVisible(true);
     m_rawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
     m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, m_uiScaleFactor);
@@ -281,7 +281,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // dual raw offset polyline
   cavc::Polyline<double> dualRawOffsetPline;
   if (m_showRawOffsetPolyline && m_showDualRawOffsetPolyline) {
-    dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset, 1);
+    dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset);
     m_dualRawOffsetPolylineNode->setIsVisible(true);
     m_dualRawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
     m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, m_uiScaleFactor);
@@ -309,7 +309,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   } break;
   case PlineOffsetAlgorithmView::RawOffsetPolyline: {
     if (rawOffsetPline.size() == 0) {
-      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset, 1);
+      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
     }
     auto spatialIndex = createApproxSpatialIndex(rawOffsetPline);
     allSelfIntersects(rawOffsetPline, selfIntersects, spatialIndex);
@@ -402,7 +402,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // slices
   if (m_finishedPolyline != PlineOffsetAlgorithmView::NoFinishedPline) {
     if (rawOffsetPline.size() == 0) {
-      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset, 1);
+      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
     }
     if (!m_slicesParentNode) {
       m_slicesParentNode = new QSGOpacityNode();
@@ -413,7 +413,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     PolylineNode *sliceNode = static_cast<PolylineNode *>(m_slicesParentNode->firstChild());
     std::size_t sliceIndex = 0;
     if (dualRawOffsetPline.size() == 0) {
-      dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset, 1);
+      dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset);
     }
     auto slices =
         dualSliceAtIntersects(prunedPline, rawOffsetPline, dualRawOffsetPline, m_plineOffset);
@@ -490,7 +490,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         }
         newOffsets = std::vector<cavc::Polyline<double>>();
         for (const auto &pline : prevOffsets) {
-          auto offsetPlines = paralleOffset(pline, m_plineOffset, 1);
+          auto offsetPlines = paralleOffset(pline, m_plineOffset);
           newOffsets.insert(newOffsets.end(), std::make_move_iterator(offsetPlines.begin()),
                             std::make_move_iterator(offsetPlines.end()));
         }
@@ -507,9 +507,9 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
                           prevOffsets.end());
         if (prevOffsets.size() == 0) {
           for (const auto &pline : copy) {
-            auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset, origPlineA > 0);
+            auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));
-            auto retry = paralleOffset(pline, m_plineOffset, 1);
+            auto retry = paralleOffset(pline, m_plineOffset);
           }
         }
         for (const auto &pline : prevOffsets) {
@@ -520,9 +520,9 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       // direct (not folded) repeat offsets
       for (int i = 1; i < m_repeatOffsetCount + 1; ++i) {
         double offsVal = i * m_plineOffset;
-        auto offsPlines = paralleOffset(prunedPline, offsVal, 1);
+        auto offsPlines = paralleOffset(prunedPline, offsVal);
         if (offsPlines.size() == 0) {
-          auto rawOffsetPline = createRawOffsetPline(prunedPline, offsVal, 1);
+          auto rawOffsetPline = createRawOffsetPline(prunedPline, offsVal);
           addPline(rawOffsetPline, QColor("red"));
           break;
         } else {
