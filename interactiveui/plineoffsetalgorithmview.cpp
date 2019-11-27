@@ -490,7 +490,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         }
         newOffsets = std::vector<cavc::Polyline<double>>();
         for (const auto &pline : prevOffsets) {
-          auto offsetPlines = paralleOffset(pline, m_plineOffset);
+          auto offsetPlines = parallelOffset(pline, m_plineOffset);
           newOffsets.insert(newOffsets.end(), std::make_move_iterator(offsetPlines.begin()),
                             std::make_move_iterator(offsetPlines.end()));
         }
@@ -509,7 +509,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
           for (const auto &pline : copy) {
             auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));
-            auto retry = paralleOffset(pline, m_plineOffset);
+            auto retry = parallelOffset(pline, m_plineOffset);
           }
         }
         for (const auto &pline : prevOffsets) {
@@ -520,7 +520,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       // direct (not folded) repeat offsets
       for (int i = 1; i < m_repeatOffsetCount + 1; ++i) {
         double offsVal = i * m_plineOffset;
-        auto offsPlines = paralleOffset(prunedPline, offsVal);
+        auto offsPlines = parallelOffset(prunedPline, offsVal);
         if (offsPlines.size() == 0) {
           auto rawOffsetPline = createRawOffsetPline(prunedPline, offsVal);
           addPline(rawOffsetPline, QColor("red"));

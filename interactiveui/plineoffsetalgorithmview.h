@@ -1,7 +1,7 @@
 #ifndef PLINEOFFSETALGORITHMVIEW_H
 #define PLINEOFFSETALGORITHMVIEW_H
 
-#include "polyline.h"
+#include "cavc/polyline.h"
 #include <QMatrix4x4>
 #include <QQuickItem>
 class PolylineNode;

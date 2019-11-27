@@ -3,7 +3,7 @@
 
 #include "flatcolorgeometrynode.h"
 #include "graphicshelpers.h"
-#include "staticspatialindex.h"
+#include "cavc/staticspatialindex.h"
 #include <QSGOpacityNode>
 
 class SpatialIndexBoundingBoxesNode : public QSGOpacityNode {
