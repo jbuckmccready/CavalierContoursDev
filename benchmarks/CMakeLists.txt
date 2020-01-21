@@ -18,5 +18,7 @@ enable_testing()
 add_executable(Benchmarks benchmarks.cpp)
 add_test(Benchmarks COMMAND Benchmarks)
 
-target_link_libraries(Benchmarks PRIVATE Qt5::Test)
+target_link_libraries(Benchmarks
+  PRIVATE CavalierContours)
 
+target_link_libraries(Benchmarks PRIVATE Qt5::Test)

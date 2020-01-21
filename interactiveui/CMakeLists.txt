@@ -14,9 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5 COMPONENTS Core Quick REQUIRED)
 
 FILE(GLOB HeaderFiles "./*.h")
-add_custom_target(headers SOURCES ${HeaderFiles})
+add_custom_target(InteractiveUI_HEADERS SOURCES ${HeaderFiles})
 
-include_directories(CavalierContours/include)
 add_executable(InteractiveUI
   main.cpp
   plineoffsetalgorithmview.cpp
@@ -27,6 +26,9 @@ add_executable(InteractiveUI
   rawoffsetsegmentsnode.cpp
   plinesegmentnode.cpp
   qml.qrc)
+
+target_link_libraries(InteractiveUI
+  PRIVATE CavalierContours)
 
 target_compile_definitions(InteractiveUI
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
