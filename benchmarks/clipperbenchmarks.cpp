@@ -39,9 +39,10 @@ static void runProfile(TestProfile const &profile, ClipperLib::Path const &path,
   }
 }
 
-static void BM_Profile1(benchmark::State &state) {
-  auto profile = profile1(static_cast<std::size_t>(state.range(0)));
+static void BM_square(benchmark::State &state) {
+  auto profile = square();
   auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
   ClipperLib::Paths results;
   for (auto _ : state) {
     (void)_;
@@ -49,11 +50,64 @@ static void BM_Profile1(benchmark::State &state) {
     runProfile(profile, path, results, true);
   }
 }
-BENCHMARK(BM_Profile1)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Range(8, 8 << 7);
+BENCHMARK(BM_square)->Unit(benchmark::kMillisecond);
+
+static void BM_diamond(benchmark::State &state) {
+  auto profile = diamond();
+  auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
+  ClipperLib::Paths results;
+  for (auto _ : state) {
+    (void)_;
+    runProfile(profile, path, results, false);
+    runProfile(profile, path, results, true);
+  }
+}
+BENCHMARK(BM_diamond)->Unit(benchmark::kMillisecond);
+
+static void BM_circle(benchmark::State &state) {
+  auto profile = circle();
+  auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
+  ClipperLib::Paths results;
+  for (auto _ : state) {
+    (void)_;
+    runProfile(profile, path, results, false);
+    runProfile(profile, path, results, true);
+  }
+}
+BENCHMARK(BM_circle)->Unit(benchmark::kMillisecond);
+
+static void BM_roundedRectangle(benchmark::State &state) {
+  auto profile = roundedRectangle();
+  auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
+  ClipperLib::Paths results;
+  for (auto _ : state) {
+    (void)_;
+    runProfile(profile, path, results, false);
+    runProfile(profile, path, results, true);
+  }
+}
+BENCHMARK(BM_roundedRectangle)->Unit(benchmark::kMillisecond);
+
+static void BM_Profile1(benchmark::State &state) {
+  auto profile = profile1();
+  auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
+  ClipperLib::Paths results;
+  for (auto _ : state) {
+    (void)_;
+    runProfile(profile, path, results, false);
+    runProfile(profile, path, results, true);
+  }
+}
+BENCHMARK(BM_Profile1)->Unit(benchmark::kMillisecond);
 
 static void BM_Profile2(benchmark::State &state) {
   auto profile = profile2();
   auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
   ClipperLib::Paths results;
   for (auto _ : state) {
     (void)_;
@@ -63,21 +117,10 @@ static void BM_Profile2(benchmark::State &state) {
 }
 BENCHMARK(BM_Profile2)->Unit(benchmark::kMillisecond);
 
-static void BM_Profile3(benchmark::State &state) {
-  auto profile = profile3();
-  auto path = polylineToClipperPath(profile.pline, unscaledArcError);
-  ClipperLib::Paths results;
-  for (auto _ : state) {
-    (void)_;
-    runProfile(profile, path, results, false);
-    runProfile(profile, path, results, true);
-  }
-}
-BENCHMARK(BM_Profile3)->Unit(benchmark::kMillisecond);
-
 static void BM_PathologicalProfile1(benchmark::State &state) {
   auto profile = pathologicalProfile1(static_cast<std::size_t>(state.range(0)));
   auto path = polylineToClipperPath(profile.pline, unscaledArcError);
+  state.counters["vertexCount"] = static_cast<double>(path.size());
   ClipperLib::Paths results;
   for (auto _ : state) {
     (void)_;
