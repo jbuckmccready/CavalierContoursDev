@@ -13,9 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Core Quick REQUIRED)
 
-FILE(GLOB HeaderFiles "./*.h")
-add_custom_target(InteractiveUI_HEADERS SOURCES ${HeaderFiles})
-
 add_executable(InteractiveUI
   main.cpp
   plineoffsetalgorithmview.cpp

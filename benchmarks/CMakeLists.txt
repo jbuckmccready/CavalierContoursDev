@@ -11,9 +11,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_testing()
 
-FILE(GLOB HeaderFiles "./*.h")
-add_custom_target(Benchmarks_HEADERS SOURCES ${HeaderFiles})
-
 add_executable(Benchmarks benchmarks.cpp)
 add_executable(ClipperBenchmarks clipperbenchmarks.cpp)
 
