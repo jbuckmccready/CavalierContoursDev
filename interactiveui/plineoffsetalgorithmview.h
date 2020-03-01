@@ -113,6 +113,8 @@ private:
   QSGOpacityNode *m_repeatOffsetsParentNode;
   QSGOpacityNode *m_endPointIntersectCirclesNode;
 
+  double m_arcApproxError;
+
   // members for mapping "real" coordinates to UI coordinates
   double m_uiScaleFactor;
   QMatrix4x4 m_realToUICoord;

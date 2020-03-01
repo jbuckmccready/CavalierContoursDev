@@ -16,49 +16,50 @@ PolylineNode::PolylineNode()
   setMaterial(&m_material);
 }
 
-void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double uiScale) {
+void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double arcApproxError) {
   // update vertexes buffer
   m_vertexesBuffer.clear();
 
-  auto lineVisitor = [&](PlineVertex<double> const &v1, PlineVertex<double> const &v2) {
-    Q_UNUSED(v1)
-    m_vertexesBuffer.emplace_back(static_cast<float>(v2.x()), static_cast<float>(v2.y()));
-  };
-
-  auto arcVisitor = [&](PlineVertex<double> const &v1, PlineVertex<double> const &v2) {
-    auto arc = arcRadiusAndCenter(v1, v2);
-    auto startAngle = angle(arc.center, v1.pos());
-    auto endAngle = angle(arc.center, v2.pos());
-    double deltaAngle = std::abs(utils::deltaAngle(startAngle, endAngle));
-    std::size_t segmentCount =
-        static_cast<std::size_t>(std::ceil(arc.radius * deltaAngle * uiScale));
-    const double sweepAngle = v1.bulge() > 0 ? deltaAngle : -deltaAngle;
-
-    for (std::size_t i = 0; i <= segmentCount; ++i) {
-      double angle = static_cast<double>(i) / segmentCount * sweepAngle + startAngle;
-      m_vertexesBuffer.emplace_back(
-          static_cast<float>(arc.radius * std::cos(angle) + arc.center.x()),
-          static_cast<float>(arc.radius * std::sin(angle) + arc.center.y()));
-    }
-  };
-
-  auto segVisitor = [&](PlineVertex<double> const &v1, PlineVertex<double> const &v2) {
+  auto visitor = [&](std::size_t i, std::size_t j) {
+    const auto &v1 = pline[i];
+    const auto &v2 = pline[j];
     if (v1.bulgeIsZero() || fuzzyEqual(v1.pos(), v2.pos())) {
-      lineVisitor(v1, v2);
+      m_vertexesBuffer.emplace_back(v1.x(), v1.y());
     } else {
-      arcVisitor(v1, v2);
+
+      auto arc = arcRadiusAndCenter(v1, v2);
+      auto startAngle = angle(arc.center, v1.pos());
+      auto endAngle = angle(arc.center, v2.pos());
+      double deltaAngle = std::abs(cavc::utils::deltaAngle(startAngle, endAngle));
+
+      double segmentSubAngle = std::abs(2.0 * std::acos(1.0 - arcApproxError / arc.radius));
+      std::size_t segmentCount = static_cast<std::size_t>(std::ceil(deltaAngle / segmentSubAngle));
+      // update segment subangle for equal length segments
+      segmentSubAngle = deltaAngle / segmentCount;
+
+      if (v1.bulge() < 0.0) {
+        segmentSubAngle = -segmentSubAngle;
+      }
+      // add the start point
+      m_vertexesBuffer.emplace_back(v1.x(), v1.y());
+
+      // add remaining points
+      for (std::size_t i = 1; i < segmentCount; ++i) {
+        double angle = i * segmentSubAngle + startAngle;
+        m_vertexesBuffer.emplace_back(arc.radius * std::cos(angle) + arc.center.x(),
+                                      arc.radius * std::sin(angle) + arc.center.y());
+      }
     }
+
+    return true;
   };
 
-  m_vertexesBuffer.emplace_back(static_cast<float>(pline[0].x()), static_cast<float>(pline[0].y()));
-
-  for (std::size_t i = 1; i < pline.size(); ++i) {
-    segVisitor(pline[i - 1], pline[i]);
-  }
+  iterateSegIndices(pline, visitor);
 
   if (pline.isClosed()) {
-    segVisitor(pline.lastVertex(), pline[0]);
     m_vertexesBuffer.push_back(m_vertexesBuffer[0]);
+  } else {
+    m_vertexesBuffer.emplace_back(pline.lastVertex().x(), pline.lastVertex().y());
   }
 
   // update node geometry from vertexes buffer

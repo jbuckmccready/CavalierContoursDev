@@ -19,6 +19,7 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
       m_slicesParentNode(nullptr),
       m_repeatOffsetsParentNode(nullptr),
       m_endPointIntersectCirclesNode(nullptr),
+      m_arcApproxError(0.005),
       m_uiScaleFactor(20),
       m_globalMouseDownPoint(),
       m_vertexGrabbed(std::numeric_limits<std::size_t>::max()),
@@ -265,7 +266,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   rootNode->setMatrix(m_realToUICoord);
   auto prunedPline = pruneSingularities(m_inputPolyline);
   m_origPolylineNode->setVertexesVisible(m_showOrigPlineVertexes);
-  m_origPolylineNode->updateGeometry(prunedPline, m_uiScaleFactor);
+  m_origPolylineNode->updateGeometry(prunedPline, m_arcApproxError);
 
   // raw offset polyline
   cavc::Polyline<double> rawOffsetPline;
@@ -273,7 +274,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
     m_rawOffsetPolylineNode->setIsVisible(true);
     m_rawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
-    m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, m_uiScaleFactor);
+    m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, m_arcApproxError);
   } else {
     m_rawOffsetPolylineNode->setIsVisible(false);
   }
@@ -284,7 +285,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset);
     m_dualRawOffsetPolylineNode->setIsVisible(true);
     m_dualRawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
-    m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, m_uiScaleFactor);
+    m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, m_arcApproxError);
   } else {
     m_dualRawOffsetPolylineNode->setIsVisible(false);
   }
@@ -293,7 +294,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   if (m_showRawOffsetSegments) {
     m_untrimmedSegmentsParentNode->setOpacity(1);
     auto rawOffsetSegments = createUntrimmedOffsetSegments(prunedPline, m_plineOffset);
-    m_untrimmedSegmentsParentNode->updateGeometry(rawOffsetSegments, m_uiScaleFactor);
+    m_untrimmedSegmentsParentNode->updateGeometry(rawOffsetSegments, m_arcApproxError);
   } else {
     m_untrimmedSegmentsParentNode->setOpacity(0);
   }
@@ -384,14 +385,14 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   case PlineOffsetAlgorithmView::OriginalPolyline: {
     m_boundingBoxesNode->setOpacity(1);
     auto spatialIndex = createApproxSpatialIndex(prunedPline);
-    m_boundingBoxesNode->updateGeometry(spatialIndex, m_uiScaleFactor);
+    m_boundingBoxesNode->updateGeometry(spatialIndex);
     break;
   }
   case PlineOffsetAlgorithmView::RawOffsetPolyline: {
     if (rawOffsetPline.size() > 1) {
       m_boundingBoxesNode->setOpacity(1);
       auto spatialIndex = createApproxSpatialIndex(rawOffsetPline);
-      m_boundingBoxesNode->updateGeometry(spatialIndex, m_uiScaleFactor);
+      m_boundingBoxesNode->updateGeometry(spatialIndex);
     } else {
       m_boundingBoxesNode->setOpacity(0);
     }
@@ -426,7 +427,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       sliceNode->setColor(gh::indexToColor(sliceIndex));
       sliceNode->setIsVisible(true);
       sliceNode->setVertexesVisible(false);
-      sliceNode->updateGeometry(pline, m_uiScaleFactor);
+      sliceNode->updateGeometry(pline, m_arcApproxError);
       sliceNode = static_cast<PolylineNode *>(sliceNode->nextSibling());
       sliceIndex++;
     };
@@ -476,7 +477,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       offsetNode->setColor(color);
       offsetNode->setIsVisible(true);
       offsetNode->setVertexesVisible(false);
-      offsetNode->updateGeometry(pline, m_uiScaleFactor);
+      offsetNode->updateGeometry(pline, m_arcApproxError);
       offsetNode = static_cast<PolylineNode *>(offsetNode->nextSibling());
     };
 
