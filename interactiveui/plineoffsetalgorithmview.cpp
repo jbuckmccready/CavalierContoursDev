@@ -435,7 +435,12 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       for (const auto &slice : slices) {
         addPline(slice.pline);
       }
-
+    } else if (m_finishedPolyline == PlineOffsetAlgorithmView::DualSlices) {
+      auto dualSlices = dualSliceAtIntersects(prunedPline, dualRawOffsetPline, rawOffsetPline, -m_plineOffset);
+      slices.insert(slices.end(), dualSlices.begin(), dualSlices.end());
+      for (const auto &slice : slices) {
+        addPline(slice.pline);
+      }
     } else {
       auto stichedPlines =
           stitchSlicesTogether(slices, rawOffsetPline.isClosed(), rawOffsetPline.size() - 1);

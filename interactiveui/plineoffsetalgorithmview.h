@@ -38,7 +38,7 @@ public:
   enum TargetPolyline { None, OriginalPolyline, RawOffsetPolyline };
   Q_ENUM(TargetPolyline)
 
-  enum FinishedPolyline { NoFinishedPline, Slices, Joined };
+  enum FinishedPolyline { NoFinishedPline, Slices, DualSlices, Joined };
   Q_ENUM(FinishedPolyline)
 
   explicit PlineOffsetAlgorithmView(QQuickItem *parent = nullptr);

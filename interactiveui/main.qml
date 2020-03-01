@@ -269,7 +269,7 @@ Window {
         ComboBox {
           id: finishedPlinesComboBox
           leftInset: 5
-          model: ["None", "Slices", "Joined"]
+          model: ["None", "Slices", "DualSlices", "Joined"]
         }
       }
 
