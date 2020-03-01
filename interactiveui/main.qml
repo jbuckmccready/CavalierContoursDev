@@ -21,11 +21,16 @@ Window {
       border.color: "black"
       clip: true
 
-
-      Item {
+      Rectangle {
         id: plineSceneItem
-        width: parent.width
-        height: parent.width
+        width: 20000
+        height: 20000
+        // initially center (0,0)
+        x: (1680-300)/2 - 10000
+        y: 1050/2 - 10000
+        border.width: 1/scaler.xScale
+        border.color: "blue"
+
         transform: Scale {
           id: scaler
           origin.x: pinchArea.m_x2
@@ -33,6 +38,7 @@ Window {
           xScale: pinchArea.m_zoom2
           yScale: pinchArea.m_zoom2
         }
+
         PinchArea {
           id: pinchArea
           anchors.fill: parent
@@ -61,6 +67,7 @@ Window {
               m_zoom2 = newZoom
             }
           }
+
           MouseArea {
             id: dragArea
             hoverEnabled: true
@@ -99,6 +106,7 @@ Window {
             }
           }
         }
+
         PlineOffsetAlgorithmView {
           id: polylineView
           anchors.fill: parent

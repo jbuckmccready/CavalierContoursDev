@@ -64,7 +64,7 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   m_inputPolyline.addVertex(28, 0, 0.5);
   m_inputPolyline.addVertex(39, 21, 0);
   m_inputPolyline.addVertex(28, 12, 0);
-  //  m_inputPolyline.isClosed() = true;
+  m_inputPolyline.isClosed() = true;
 
   //  auto radius = 40;
   //  auto centerX = 0;
@@ -488,38 +488,31 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         prevOffsets.push_back(prunedPline);
       }
 
-      std::vector<cavc::Polyline<double>> newOffsets;
       for (int i = 0; i < m_repeatOffsetCount; ++i) {
         if (prevOffsets.size() == 0) {
           break;
         }
-        newOffsets = std::vector<cavc::Polyline<double>>();
+        std::vector<cavc::Polyline<double>> newOffsets = std::vector<cavc::Polyline<double>>();
+
         for (const auto &pline : prevOffsets) {
           auto offsetPlines = parallelOffset(pline, m_plineOffset);
           newOffsets.insert(newOffsets.end(), std::make_move_iterator(offsetPlines.begin()),
                             std::make_move_iterator(offsetPlines.end()));
         }
-        auto copy = prevOffsets;
-        prevOffsets = std::move(newOffsets);
-        prevOffsets.erase(std::remove_if(prevOffsets.begin(), prevOffsets.end(),
-                                         [&](const auto &pline) {
-                                           if (!prunedPline.isClosed()) {
-                                             return false;
-                                           }
-                                           double a = area(pline);
-                                           return (a > 0 != origPlineA > 0) || std::abs(a) < 1e-4;
-                                         }),
-                          prevOffsets.end());
-        if (prevOffsets.size() == 0) {
-          for (const auto &pline : copy) {
+
+        if (newOffsets.size() == 0) {
+          for (const auto &pline : prevOffsets) {
             auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));
             auto retry = parallelOffset(pline, m_plineOffset);
           }
         }
-        for (const auto &pline : prevOffsets) {
+
+        for (const auto &pline : newOffsets) {
           addPline(pline, QColor("blue"));
         }
+
+        prevOffsets = std::move(newOffsets);
       }
     } else {
       // direct (not folded) repeat offsets
