@@ -10,7 +10,7 @@ Window {
   visible: true
   width: 1680
   height: 1050
-  title: qsTr("Hello World")
+  title: qsTr("Cavalier Contours")
   SplitView {
     anchors.fill: parent
 
@@ -110,7 +110,6 @@ Window {
         PlineOffsetAlgorithmView {
           id: polylineView
           anchors.fill: parent
-          onScaleChanged: console.log("scale changed")
           spatialIndexTarget: spatialIndexTargetComboBox.currentIndex
           selfIntersectsTarget: selfIntersectsTargetComboBox.currentIndex
           finishedPolyline: finishedPlinesComboBox.currentIndex
