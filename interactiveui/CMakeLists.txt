@@ -15,7 +15,9 @@ find_package(Qt5 COMPONENTS Core Quick REQUIRED)
 
 add_executable(InteractiveUI
   main.cpp
+  geometrycanvasitem.cpp
   plineoffsetalgorithmview.cpp
+  plineboolopsalgorithmview.cpp
   graphicshelpers.cpp
   polylinenode.cpp
   spatialindexboundingboxesnode.cpp

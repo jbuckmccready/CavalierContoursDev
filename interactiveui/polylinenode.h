@@ -10,7 +10,7 @@
 class PolylineNode : public QSGGeometryNode {
 public:
   PolylineNode();
-  void updateGeometry(cavc::Polyline<double> const &pline, double arcApproxError = 0.01);
+  void updateGeometry(cavc::Polyline<double> const &pline, double arcApproxError = 0.005);
   QColor const &color() const;
   void setColor(QColor const &color);
 

@@ -1,8 +1,8 @@
 #ifndef RAWOFFSETSEGMENTSNODE_H
 #define RAWOFFSETSEGMENTSNODE_H
 
-#include "plinesegmentnode.h"
 #include "cavc/polyline.h"
+#include "plinesegmentnode.h"
 #include <QSGOpacityNode>
 #include <vector>
 

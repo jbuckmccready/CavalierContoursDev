@@ -9,7 +9,7 @@
 using namespace cavc;
 
 PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
-    : QQuickItem(parent),
+    : GeometryCanvasItem(parent),
       m_origPolylineNode(nullptr),
       m_rawOffsetPolylineNode(nullptr),
       m_dualRawOffsetPolylineNode(nullptr),
@@ -20,7 +20,6 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
       m_repeatOffsetsParentNode(nullptr),
       m_endPointIntersectCirclesNode(nullptr),
       m_arcApproxError(0.005),
-      m_uiScaleFactor(20),
       m_globalMouseDownPoint(),
       m_vertexGrabbed(std::numeric_limits<std::size_t>::max()),
       m_interacting(false),
@@ -36,10 +35,6 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
       m_showEndPointIntersectCircles(false),
       m_showDualRawOffsetPolyline(false) {
 
-  setFlag(ItemHasContents, true);
-  setAcceptedMouseButtons(Qt::LeftButton);
-  m_realToUICoord.translate(static_cast<float>(width() / 2), static_cast<float>(height() / 2));
-  m_realToUICoord.scale(static_cast<float>(m_uiScaleFactor), static_cast<float>(-m_uiScaleFactor));
   //  m_inputPolyline.addVertex(0, 0, 0.5);
   //  m_inputPolyline.addVertex(1, 1, 0.5);
   //  m_inputPolyline.addVertex(2, 2, 0);
@@ -54,6 +49,12 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   //  m_inputPolyline.addVertex(2, 5, 0);
   //  m_inputPolyline.isClosed() = true;
 
+  //  m_inputPolyline.addVertex(0,0,0);
+  //  m_inputPolyline.addVertex(10,0,0);
+  //  m_inputPolyline.addVertex(10,10,0);
+  //  m_inputPolyline.addVertex(0,10,0);
+  //  m_inputPolyline.isClosed() = true;
+
   m_inputPolyline.addVertex(0, 25, 1);
   m_inputPolyline.addVertex(0, 0, 0);
   m_inputPolyline.addVertex(2, 0, 1);
@@ -64,7 +65,7 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   m_inputPolyline.addVertex(32, 0, -0.5);
   m_inputPolyline.addVertex(28, 0, 0.5);
   m_inputPolyline.addVertex(39, 21, 0);
-  m_inputPolyline.addVertex(28, 12, 0);
+  m_inputPolyline.addVertex(28, 12, 0.5);
   m_inputPolyline.isClosed() = true;
 
   //  auto radius = 40;
@@ -72,7 +73,7 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   //  auto centerY = 0;
   //  std::size_t segmentCount = 10;
   //  for (std::size_t i = 0; i < segmentCount; ++i) {
-  //    double angle = static_cast<double>(i) * utils::tau<double> / segmentCount;
+  //    double angle = static_cast<double>(i) * utils::tau<double>() / segmentCount;
   //    m_inputPolyline.addVertex(radius * std::cos(angle) + centerX,
   //                              radius * std::sin(angle) + centerY, i % 2 == 0 ? 1 : -1);
   //  }
@@ -361,7 +362,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       auto *vData = n->geometry()->vertexDataAsPoint2D();
       auto rad = std::abs(m_plineOffset);
       for (std::size_t i = 0; i < 50; ++i) {
-        double angle = static_cast<double>(i) / 50 * cavc::utils::tau<double>;
+        double angle = static_cast<double>(i) / 50 * cavc::utils::tau<double>();
         auto pt = cavc::pointOnCircle(rad, center, angle);
         vData[i].set(static_cast<float>(pt.x()), static_cast<float>(pt.y()));
       }
@@ -437,7 +438,8 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         addPline(slice.pline);
       }
     } else if (m_finishedPolyline == PlineOffsetAlgorithmView::DualSlices) {
-      auto dualSlices = dualSliceAtIntersects(prunedPline, dualRawOffsetPline, rawOffsetPline, -m_plineOffset);
+      auto dualSlices =
+          dualSliceAtIntersects(prunedPline, dualRawOffsetPline, rawOffsetPline, -m_plineOffset);
       slices.insert(slices.end(), dualSlices.begin(), dualSlices.end());
       for (const auto &slice : slices) {
         addPline(slice.pline);
@@ -551,32 +553,14 @@ void PlineOffsetAlgorithmView::mousePressEvent(QMouseEvent *event) {
   }
   // converting to global coordinates to get screen resolution delta even if current scale != 1
   m_globalMouseDownPoint = QPointF(event->globalX(), event->globalY());
-  auto containsVertex = [&](const QPointF &vPosInGlobal) {
-    return utils::fuzzyEqual(vPosInGlobal.x(), m_globalMouseDownPoint.x(), 5.0) &&
-           utils::fuzzyEqual(vPosInGlobal.y(), m_globalMouseDownPoint.y(), 5.0);
-  };
 
-  m_vertexGrabbed = std::numeric_limits<std::size_t>::max();
-  double minDist = std::numeric_limits<double>::infinity();
-  for (std::size_t i = 0; i < m_inputPolyline.size(); ++i) {
-    QPointF vPosInGlobal =
-        mapToGlobal(m_realToUICoord * QPointF(m_inputPolyline[i].x(), m_inputPolyline[i].y()));
-    if (containsVertex(vPosInGlobal)) {
-      // grab the vertex closest to the mouse in the case of vertexes being very close to each other
-      QPointF vDiff = vPosInGlobal - m_globalMouseDownPoint;
-      double dist = QPointF::dotProduct(vDiff, vDiff);
-      if (dist < minDist) {
-        m_origVertexGlobalPos = vPosInGlobal;
-        m_vertexGrabbed = i;
-        minDist = dist;
-      }
-    }
-  }
-
-  if (m_vertexGrabbed == std::numeric_limits<std::size_t>::max()) {
+  m_vertexGrabbed = vertexUnderPosition(m_globalMouseDownPoint, m_inputPolyline);
+  if (!isVertexGrabbed()) {
     event->ignore();
     return;
   }
+
+  m_origVertexGlobalPos = convertToGlobalUICoord(m_inputPolyline[m_vertexGrabbed].pos());
 
   setInteracting(true);
   event->accept();
@@ -609,16 +593,4 @@ void PlineOffsetAlgorithmView::mouseReleaseEvent(QMouseEvent *event) {
 
 bool PlineOffsetAlgorithmView::isVertexGrabbed() {
   return m_vertexGrabbed != std::numeric_limits<std::size_t>::max();
-}
-
-void PlineOffsetAlgorithmView::geometryChanged(const QRectF &newGeometry,
-                                               const QRectF &oldGeometry) {
-  Q_UNUSED(oldGeometry)
-  QQuickItem::geometryChanged(newGeometry, oldGeometry);
-  m_realToUICoord.setToIdentity();
-  m_realToUICoord.translate(static_cast<float>(newGeometry.width() / 2),
-                            static_cast<float>(newGeometry.height() / 2));
-  m_realToUICoord.scale(static_cast<float>(m_uiScaleFactor), static_cast<float>(-m_uiScaleFactor));
-  m_uiToRealCoord = m_realToUICoord.inverted();
-  update();
 }

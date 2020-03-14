@@ -1,9 +1,9 @@
 #ifndef SPATIALINDEXBOUNDINGBOXESNODE_H
 #define SPATIALINDEXBOUNDINGBOXESNODE_H
 
+#include "cavc/staticspatialindex.h"
 #include "flatcolorgeometrynode.h"
 #include "graphicshelpers.h"
-#include "cavc/staticspatialindex.h"
 #include <QSGOpacityNode>
 
 class SpatialIndexBoundingBoxesNode : public QSGOpacityNode {
@@ -23,7 +23,7 @@ public:
       }
 
       bbNode->setIsVisible(true);
-      bbNode->setColor(gh::indexToColor(level+3));
+      bbNode->setColor(gh::indexToColor(level + 3));
 
       QSGGeometry::Point2D *vertexes = bbNode->geometry()->vertexDataAsPoint2D();
       vertexes[0].set(minX, minY);

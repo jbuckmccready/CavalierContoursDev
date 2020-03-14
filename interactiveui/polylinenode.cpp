@@ -20,6 +20,10 @@ void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double ar
   // update vertexes buffer
   m_vertexesBuffer.clear();
 
+  if (pline.size() == 0) {
+    return;
+  }
+
   auto visitor = [&](std::size_t i, std::size_t j) {
     const auto &v1 = pline[i];
     const auto &v2 = pline[j];

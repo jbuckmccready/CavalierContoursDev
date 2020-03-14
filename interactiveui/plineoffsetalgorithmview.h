@@ -2,15 +2,15 @@
 #define PLINEOFFSETALGORITHMVIEW_H
 
 #include "cavc/polyline.h"
+#include "geometrycanvasitem.h"
 #include <QMatrix4x4>
-#include <QQuickItem>
 class PolylineNode;
 class RawOffsetSegmentsNode;
 class QSGGeometryNode;
 class SpatialIndexBoundingBoxesNode;
 class QSGOpacityNode;
 
-class PlineOffsetAlgorithmView : public QQuickItem {
+class PlineOffsetAlgorithmView : public GeometryCanvasItem {
   Q_OBJECT
   Q_PROPERTY(bool interacting READ interacting NOTIFY interactingChanged)
   Q_PROPERTY(bool showOrigPlineVertexes READ showOrigPlineVertexes WRITE setShowOrigPlineVertexes
@@ -98,7 +98,6 @@ protected:
   void mousePressEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
-  void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
 private:
   void setInteracting(bool interacting);
@@ -114,11 +113,6 @@ private:
   QSGOpacityNode *m_endPointIntersectCirclesNode;
 
   double m_arcApproxError;
-
-  // members for mapping "real" coordinates to UI coordinates
-  double m_uiScaleFactor;
-  QMatrix4x4 m_realToUICoord;
-  QMatrix4x4 m_uiToRealCoord;
 
   // members for interaction
   bool isVertexGrabbed();

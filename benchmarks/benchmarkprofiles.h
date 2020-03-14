@@ -58,7 +58,7 @@ inline TestProfile roundedRectangle() {
   auto width = totalWidth - 2 * cornerRadius;
   auto height = totalHeight - 2 * cornerRadius;
   // 90 deg corner radii
-  auto bulge = std::tan(cavc::utils::pi<double> / 8.0);
+  auto bulge = std::tan(cavc::utils::pi<double>() / 8.0);
 
   cavc::Polyline<double> pline;
   pline.isClosed() = true;
@@ -122,7 +122,7 @@ inline TestProfile pathologicalProfile1(std::size_t segmentCount) {
   pline.isClosed() = true;
 
   for (std::size_t i = 0; i < segmentCount; ++i) {
-    double angle = static_cast<double>(i) * cavc::utils::tau<double> / segmentCount;
+    double angle = static_cast<double>(i) * cavc::utils::tau<double>() / segmentCount;
     pline.addVertex(radius * std::cos(angle) + centerX, radius * std::sin(angle) + centerY,
                     i % 2 == 0 ? 1 : -1);
   }
