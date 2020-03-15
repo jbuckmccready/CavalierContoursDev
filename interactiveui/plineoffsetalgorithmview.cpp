@@ -503,8 +503,20 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
                             std::make_move_iterator(offsetPlines.end()));
         }
 
+        auto copy = prevOffsets;
+
+        newOffsets.erase(std::remove_if(newOffsets.begin(), newOffsets.end(),
+                                        [&](const auto &pline) {
+                                          if (!prunedPline.isClosed()) {
+                                            return false;
+                                          }
+                                          double a = area(pline);
+                                          return (a > 0 != origPlineA > 0) || std::abs(a) < 1e-4;
+                                        }),
+                         newOffsets.end());
+
         if (newOffsets.size() == 0) {
-          for (const auto &pline : prevOffsets) {
+          for (const auto &pline : copy) {
             auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));
             auto retry = parallelOffset(pline, m_plineOffset);

@@ -13,42 +13,33 @@ ApplicationWindow {
     id: tabBar
     TabButton {
       text: "Offset"
-      width: implicitWidth
     }
     TabButton {
       text: "Boolean Ops"
-      width: implicitWidth
+    }
+    TabButton {
+      text: "Hilbert Curve"
     }
   }
 
   Page {
     anchors.fill: parent
-    StackLayout {
+    Rectangle {
       anchors.fill: parent
-      currentIndex: tabBar.currentIndex
-      Rectangle {
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        border.width: 2
-        border.color: "grey"
-        OffsetAlgorithmScene {
-          anchors.fill: parent
-          anchors.margins: 2
-        }
+      border.width: 2
+      border.color: "grey"
+      StackLayout {
+        anchors.fill: parent
+        anchors.margins: 2
+        currentIndex: tabBar.currentIndex
+
+        OffsetAlgorithmScene {}
+        BooleanOpsAlgorithmScene {}
+        HilbertCurveScene {}
       }
 
-      Rectangle {
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        border.width: 2
-        border.color: "grey"
-        BooleanOpsAlgorithmScene {
-          anchors.fill: parent
-          anchors.margins: 2
-        }
-
-      }
     }
+
   }
 
 }

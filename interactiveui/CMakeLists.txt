@@ -18,6 +18,7 @@ add_executable(InteractiveUI
   geometrycanvasitem.cpp
   plineoffsetalgorithmview.cpp
   plineboolopsalgorithmview.cpp
+  demofuncs.cpp
   graphicshelpers.cpp
   polylinenode.cpp
   spatialindexboundingboxesnode.cpp

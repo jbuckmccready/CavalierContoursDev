@@ -4,5 +4,6 @@
         <file>GeometrySceneView.qml</file>
         <file>OffsetAlgorithmScene.qml</file>
         <file>BooleanOpsAlgorithmScene.qml</file>
+        <file>HilbertCurveScene.qml</file>
     </qresource>
 </RCC>
