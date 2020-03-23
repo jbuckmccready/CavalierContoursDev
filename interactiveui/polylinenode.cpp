@@ -32,6 +32,12 @@ void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double ar
     } else {
 
       auto arc = arcRadiusAndCenter(v1, v2);
+
+      if (arc.radius < arcApproxError + utils::realThreshold<double>()) {
+        m_vertexesBuffer.emplace_back(v1.x(), v1.y());
+        return true;
+      }
+
       auto startAngle = angle(arc.center, v1.pos());
       auto endAngle = angle(arc.center, v2.pos());
       double deltaAngle = std::abs(cavc::utils::deltaAngle(startAngle, endAngle));

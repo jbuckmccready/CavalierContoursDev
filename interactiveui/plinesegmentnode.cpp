@@ -12,26 +12,32 @@ void PlineSegmentNode::updateGeometry(const cavc::PlineVertex<double> &v1,
     m_geometry.vertexDataAsPoint2D()[1].set(static_cast<float>(v2.x()), static_cast<float>(v2.y()));
   } else {
     auto arc = arcRadiusAndCenter(v1, v2);
-    auto startAngle = angle(arc.center, v1.pos());
-    auto endAngle = angle(arc.center, v2.pos());
-    double deltaAngle = std::abs(utils::deltaAngle(startAngle, endAngle));
+    if (arc.radius < arcApproxError + utils::realThreshold<double>()) {
+      m_geometry.allocate(static_cast<int>(1));
+      m_geometry.vertexDataAsPoint2D()[0].set(static_cast<float>(v1.x()),
+                                              static_cast<float>(v1.y()));
+    } else {
+      auto startAngle = angle(arc.center, v1.pos());
+      auto endAngle = angle(arc.center, v2.pos());
+      double deltaAngle = std::abs(utils::deltaAngle(startAngle, endAngle));
 
-    double segmentSubAngle = std::abs(2.0 * std::acos(1.0 - arcApproxError / arc.radius));
-    std::size_t segmentCount = static_cast<std::size_t>(std::ceil(deltaAngle / segmentSubAngle));
-    // update segment subangle for equal length segments
-    segmentSubAngle = deltaAngle / segmentCount;
+      double segmentSubAngle = std::abs(2.0 * std::acos(1.0 - arcApproxError / arc.radius));
+      std::size_t segmentCount = static_cast<std::size_t>(std::ceil(deltaAngle / segmentSubAngle));
+      // update segment subangle for equal length segments
+      segmentSubAngle = deltaAngle / segmentCount;
 
-    if (v1.bulge() < 0.0) {
-      segmentSubAngle = -segmentSubAngle;
-    }
+      if (v1.bulge() < 0.0) {
+        segmentSubAngle = -segmentSubAngle;
+      }
 
-    m_geometry.allocate(static_cast<int>(segmentCount + 1));
+      m_geometry.allocate(static_cast<int>(segmentCount + 1));
 
-    for (std::size_t i = 0; i <= segmentCount; ++i) {
-      double angle = i * segmentSubAngle + startAngle;
-      m_geometry.vertexDataAsPoint2D()[i].set(
-          static_cast<float>(arc.radius * std::cos(angle) + arc.center.x()),
-          static_cast<float>(arc.radius * std::sin(angle) + arc.center.y()));
+      for (std::size_t i = 0; i <= segmentCount; ++i) {
+        double angle = i * segmentSubAngle + startAngle;
+        m_geometry.vertexDataAsPoint2D()[i].set(
+            static_cast<float>(arc.radius * std::cos(angle) + arc.center.x()),
+            static_cast<float>(arc.radius * std::sin(angle) + arc.center.y()));
+      }
     }
   }
 
