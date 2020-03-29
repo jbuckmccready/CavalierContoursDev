@@ -17,7 +17,7 @@ add_executable(InteractiveUI
   main.cpp
   geometrycanvasitem.cpp
   plineoffsetalgorithmview.cpp
-  plineboolopsalgorithmview.cpp
+  plinecombinealgorithmview.cpp
   demofuncs.cpp
   graphicshelpers.cpp
   polylinenode.cpp
@@ -29,6 +29,9 @@ add_executable(InteractiveUI
 
 target_link_libraries(InteractiveUI
   PRIVATE CavalierContours)
+
+target_link_libraries(InteractiveUI
+  PRIVATE clipper_static)
 
 target_compile_definitions(InteractiveUI
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)

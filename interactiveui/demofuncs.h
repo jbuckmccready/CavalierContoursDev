@@ -3,8 +3,7 @@
 
 #include <QObject>
 
-class DemoFuncs : public QObject
-{
+class DemoFuncs : public QObject {
   Q_OBJECT
 public:
   explicit DemoFuncs(QObject *parent = nullptr);

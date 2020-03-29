@@ -1,5 +1,5 @@
 #include "demofuncs.h"
-#include "plineboolopsalgorithmview.h"
+#include "plinecombinealgorithmview.h"
 #include "plineoffsetalgorithmview.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
                                       });
 
   qmlRegisterType<PlineOffsetAlgorithmView>("Polyline", 1, 0, "PlineOffsetAlgorithmView");
-  qmlRegisterType<PlineBoolOpsAlgorithmView>("Polyline", 1, 0, "PlineBoolOpsAlgorithmView");
+  qmlRegisterType<PlineCombineAlgorithmView>("Polyline", 1, 0, "PlineCombineAlgorithmView");
 
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 

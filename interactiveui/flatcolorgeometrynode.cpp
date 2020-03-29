@@ -1,7 +1,9 @@
 #include "flatcolorgeometrynode.h"
 
-FlatColorGeometryNode::FlatColorGeometryNode()
-    : m_isVisible(false), m_geometry(QSGGeometry::defaultAttributes_Point2D(), 0) {
+FlatColorGeometryNode::FlatColorGeometryNode(bool useUInt32Index)
+    : m_isVisible(true),
+      m_geometry(QSGGeometry::defaultAttributes_Point2D(), 0, 0,
+                 useUInt32Index ? QSGGeometry::UnsignedIntType : QSGGeometry::UnsignedShortType) {
   m_geometry.setLineWidth(1);
   m_geometry.setDrawingMode(QSGGeometry::DrawLineStrip);
   setGeometry(&m_geometry);

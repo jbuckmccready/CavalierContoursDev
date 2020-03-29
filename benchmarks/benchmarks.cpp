@@ -1,5 +1,5 @@
 #include "benchmarkprofiles.h"
-#include "cavc/polyline.h"
+#include "cavc/polylineoffset.h"
 #include <benchmark/benchmark.h>
 
 const double arcError = 0.01;

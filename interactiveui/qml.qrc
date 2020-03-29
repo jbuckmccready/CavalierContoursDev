@@ -2,8 +2,8 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>GeometrySceneView.qml</file>
-        <file>OffsetAlgorithmScene.qml</file>
-        <file>BooleanOpsAlgorithmScene.qml</file>
+        <file>PlineOffsetScene.qml</file>
+        <file>PlineCombineScene.qml</file>
         <file>HilbertCurveScene.qml</file>
     </qresource>
 </RCC>

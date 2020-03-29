@@ -1,34 +1,105 @@
 #include "polylinenode.h"
+#include "flatcolorgeometrynode.h"
 #include "graphicshelpers.h"
 #include <QDebug>
 using namespace cavc;
 
 PolylineNode::PolylineNode()
-    : m_vertexesVisible(false),
+    : m_pathVisible(true),
+      m_vertexesVisible(false),
+      m_pathNode(nullptr),
       m_vertexesPointNode(nullptr),
+      m_pathColor(Qt::blue),
       m_vertexesColor(Qt::red),
-      m_isVisible(true),
-      m_geometry(QSGGeometry::defaultAttributes_Point2D(), 0, 0, GL_UNSIGNED_INT) {
-  m_geometry.setLineWidth(1);
-  m_geometry.setDrawingMode(QSGGeometry::DrawLineStrip);
-  setGeometry(&m_geometry);
-  m_material.setColor(Qt::blue);
-  setMaterial(&m_material);
+      m_isVisible(true) {}
+
+void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, PathDrawMode pathDrawMode,
+                                  double arcApproxError) {
+
+  updatePathNode(pline, arcApproxError, pathDrawMode);
+  updateVertexesNode(pline);
+
+  markDirty(QSGNode::DirtyGeometry);
 }
 
-void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double arcApproxError) {
-  // update vertexes buffer
+const QColor &PolylineNode::color() const { return m_pathColor; }
+
+void PolylineNode::setColor(const QColor &color) {
+  if (m_pathColor != color) {
+    m_pathColor = color;
+    if (m_pathNode) {
+      m_pathNode->setColor(m_pathColor);
+    }
+  }
+}
+
+bool PolylineNode::pathVisible() const { return m_pathVisible; }
+
+void PolylineNode::setPathVisible(bool pathVisible) {
+  if (pathVisible != m_pathVisible) {
+    m_pathVisible = pathVisible;
+    if (m_pathNode) {
+      m_pathNode->setIsVisible(pathVisible);
+    }
+  }
+}
+
+const QColor &PolylineNode::vertexesColor() const { return m_vertexesColor; }
+
+void PolylineNode::setVertexesColor(const QColor &vertexesColor) {
+  if (vertexesColor != m_vertexesColor) {
+    m_vertexesColor = vertexesColor;
+    if (m_vertexesPointNode) {
+      m_vertexesPointNode->setColor(m_vertexesColor);
+    }
+  }
+}
+
+bool PolylineNode::vertexesVisible() const { return m_vertexesVisible; }
+
+void PolylineNode::setVertexesVisible(bool vertexesVisible) {
+  if (vertexesVisible != m_vertexesVisible) {
+    m_vertexesVisible = vertexesVisible;
+    if (m_vertexesPointNode) {
+      m_vertexesPointNode->setIsVisible(m_vertexesVisible);
+    }
+  }
+}
+
+void PolylineNode::setIsVisible(bool isVisible) {
+  m_pathVisible = isVisible;
+  m_vertexesVisible = isVisible;
+  if (m_pathNode) {
+    m_pathNode->setIsVisible(isVisible);
+  }
+  if (m_vertexesPointNode) {
+    m_vertexesPointNode->setIsVisible(isVisible);
+  }
+}
+
+void PolylineNode::updatePathNode(const cavc::Polyline<double> &pline, double arcApproxError,
+                                  PathDrawMode drawMode) {
   m_vertexesBuffer.clear();
 
-  if (pline.size() == 0) {
-    return;
-  }
-
+  // update vertexes buffer
   auto visitor = [&](std::size_t i, std::size_t j) {
     const auto &v1 = pline[i];
     const auto &v2 = pline[j];
     if (v1.bulgeIsZero() || fuzzyEqual(v1.pos(), v2.pos())) {
-      m_vertexesBuffer.emplace_back(v1.x(), v1.y());
+      if (drawMode == PathDrawMode::NormalPath) {
+        m_vertexesBuffer.emplace_back(v1.x(), v1.y());
+      } else {
+        // generate multiple points along the segment for dashes
+        double length = cavc::length(v2.pos() - v1.pos());
+        double dashSpacing = 0.5;
+        int dashCount = static_cast<int>(std::ceil(length / dashSpacing));
+        for (int i = 0; i < dashCount; ++i) {
+          double t = static_cast<double>(i) / dashCount;
+          double x = v1.x() + t * (v2.x() - v1.x());
+          double y = v1.y() + t * (v2.y() - v1.y());
+          m_vertexesBuffer.emplace_back(x, y);
+        }
+      }
     } else {
 
       auto arc = arcRadiusAndCenter(v1, v2);
@@ -64,107 +135,68 @@ void PolylineNode::updateGeometry(const cavc::Polyline<double> &pline, double ar
     return true;
   };
 
-  iterateSegIndices(pline, visitor);
+  pline.visitSegIndices(visitor);
 
-  if (pline.isClosed()) {
-    m_vertexesBuffer.push_back(m_vertexesBuffer[0]);
-  } else {
-    m_vertexesBuffer.emplace_back(pline.lastVertex().x(), pline.lastVertex().y());
+  if (pline.size() != 0) {
+    if (pline.isClosed()) {
+      m_vertexesBuffer.push_back(m_vertexesBuffer[0]);
+    } else {
+      m_vertexesBuffer.emplace_back(pline.lastVertex().x(), pline.lastVertex().y());
+    }
   }
 
   // update node geometry from vertexes buffer
   const int plineSegVertexCount = static_cast<int>(m_vertexesBuffer.size());
-  m_geometry.allocate(plineSegVertexCount, plineSegVertexCount);
-  std::uint32_t *segVertexIndices = m_geometry.indexDataAsUInt();
+
+  if (!m_pathNode) {
+    m_pathNode = new FlatColorGeometryNode(true);
+    m_pathNode->geometry()->setLineWidth(1);
+    m_pathNode->setColor(m_pathColor);
+    appendChildNode(m_pathNode);
+    m_pathNode->setFlag(QSGNode::OwnedByParent);
+    m_pathNode->setIsVisible(m_pathVisible);
+  }
+
+  QSGGeometry *pathGeom = m_pathNode->geometry();
+  pathGeom->setDrawingMode(drawMode == NormalPath ? QSGGeometry::DrawLineStrip
+                                                  : QSGGeometry::DrawLines);
+
+  pathGeom->allocate(plineSegVertexCount, plineSegVertexCount);
+
+  std::uint32_t *segVertexIndices = pathGeom->indexDataAsUInt();
   for (int i = 0; i < plineSegVertexCount; ++i) {
     segVertexIndices[i] = static_cast<std::uint32_t>(i);
   }
 
-  QSGGeometry::Point2D *vertexData = m_geometry.vertexDataAsPoint2D();
+  QSGGeometry::Point2D *vertexData = pathGeom->vertexDataAsPoint2D();
   for (std::size_t i = 0; i < m_vertexesBuffer.size(); ++i) {
     vertexData[i].set(m_vertexesBuffer[i].x(), m_vertexesBuffer[i].y());
   }
 
+  m_pathNode->markDirty(QSGNode::DirtyGeometry);
+}
+
+void PolylineNode::updateVertexesNode(const cavc::Polyline<double> &pline) {
   const int plinePointVertexCount = static_cast<int>(pline.size());
-  if (m_vertexesVisible) {
-    if (!m_vertexesPointNode) {
-      m_vertexesPointNode = new QSGGeometryNode();
-      QSGGeometry *pointGeometry =
-          new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), plinePointVertexCount,
-                          plinePointVertexCount, GL_UNSIGNED_INT);
-      pointGeometry->setDrawingMode(QSGGeometry::DrawPoints);
-      pointGeometry->setLineWidth(8);
-      m_vertexesPointNode->setGeometry(pointGeometry);
-      m_vertexesPointNode->setFlag(QSGNode::OwnsGeometry);
-
-      QSGFlatColorMaterial *pointMaterial = new QSGFlatColorMaterial();
-      pointMaterial->setColor(m_vertexesColor);
-      m_vertexesPointNode->setMaterial(pointMaterial);
-      m_vertexesPointNode->setFlag(QSGNode::OwnsMaterial);
-      appendChildNode(m_vertexesPointNode);
-      m_vertexesPointNode->setFlag(QSGNode::OwnedByParent);
-    } else {
-      m_vertexesPointNode->geometry()->allocate(plinePointVertexCount, plinePointVertexCount);
-    }
-
-    std::uint32_t *pointVertexIndices = m_vertexesPointNode->geometry()->indexDataAsUInt();
-    for (int i = 0; i < plinePointVertexCount; ++i) {
-      pointVertexIndices[i] = static_cast<std::uint32_t>(i);
-    }
-    QSGGeometry::Point2D *pointVertexData = m_vertexesPointNode->geometry()->vertexDataAsPoint2D();
-    for (std::size_t i = 0; i < pline.size(); ++i) {
-      pointVertexData[i].set(static_cast<float>(pline[i].x()), static_cast<float>(pline[i].y()));
-    }
-    m_vertexesPointNode->markDirty(QSGNode::DirtyGeometry);
-  } else {
-    if (m_vertexesPointNode) {
-      removeChildNode(m_vertexesPointNode);
-      delete m_vertexesPointNode;
-      m_vertexesPointNode = nullptr;
-    }
+  if (!m_vertexesPointNode) {
+    m_vertexesPointNode = new FlatColorGeometryNode(true);
+    QSGGeometry *pointGeometry = m_vertexesPointNode->geometry();
+    pointGeometry->setDrawingMode(QSGGeometry::DrawPoints);
+    pointGeometry->setLineWidth(8);
+    m_vertexesPointNode->setColor(m_vertexesColor);
+    appendChildNode(m_vertexesPointNode);
+    m_vertexesPointNode->setFlag(QSGNode::OwnedByParent);
+    m_vertexesPointNode->setIsVisible(m_vertexesVisible);
   }
+  m_vertexesPointNode->geometry()->allocate(plinePointVertexCount, plinePointVertexCount);
 
-  markDirty(QSGNode::DirtyGeometry);
-}
-
-const QColor &PolylineNode::color() const { return m_material.color(); }
-
-void PolylineNode::setColor(const QColor &color) {
-  if (m_material.color() != color) {
-    m_material.setColor(color);
-    markDirty(QSGNode::DirtyMaterial);
+  std::uint32_t *pointVertexIndices = m_vertexesPointNode->geometry()->indexDataAsUInt();
+  for (int i = 0; i < plinePointVertexCount; ++i) {
+    pointVertexIndices[i] = static_cast<std::uint32_t>(i);
   }
-}
-
-const QColor &PolylineNode::vertexesColor() const { return m_vertexesColor; }
-
-void PolylineNode::setVertexesColor(const QColor &vertexesColor) {
-  if (vertexesColor != m_vertexesColor) {
-    m_vertexesColor = vertexesColor;
-    if (m_vertexesPointNode) {
-      auto *material = static_cast<QSGFlatColorMaterial *>(m_vertexesPointNode->material());
-      material->setColor(m_vertexesColor);
-      m_vertexesPointNode->markDirty(QSGNode::DirtyMaterial);
-    }
+  QSGGeometry::Point2D *pointVertexData = m_vertexesPointNode->geometry()->vertexDataAsPoint2D();
+  for (std::size_t i = 0; i < pline.size(); ++i) {
+    pointVertexData[i].set(static_cast<float>(pline[i].x()), static_cast<float>(pline[i].y()));
   }
+  m_vertexesPointNode->markDirty(QSGNode::DirtyGeometry);
 }
-
-bool PolylineNode::vertexesVisible() const { return m_vertexesVisible; }
-
-void PolylineNode::setVertexesVisible(bool vertexesVisible) {
-  if (vertexesVisible != m_vertexesVisible) {
-    m_vertexesVisible = vertexesVisible;
-    markDirty(QSGNode::DirtyGeometry);
-  }
-}
-
-bool PolylineNode::isVisible() const { return m_isVisible; }
-
-void PolylineNode::setIsVisible(bool isVisible) {
-  if (m_isVisible != isVisible) {
-    m_isVisible = isVisible;
-    markDirty(QSGNode::DirtySubtreeBlocked);
-  }
-}
-
-bool PolylineNode::isSubtreeBlocked() const { return !m_isVisible; }

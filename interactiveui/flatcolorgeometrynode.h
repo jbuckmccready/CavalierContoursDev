@@ -6,7 +6,7 @@
 
 class FlatColorGeometryNode : public QSGGeometryNode {
 public:
-  FlatColorGeometryNode();
+  FlatColorGeometryNode(bool useUInt32Index = false);
   QColor const &color() const;
   void setColor(QColor const &color);
   bool isVisible() const;

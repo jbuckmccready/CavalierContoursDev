@@ -12,10 +12,10 @@ ApplicationWindow {
   header:  TabBar {
     id: tabBar
     TabButton {
-      text: "Offset"
+      text: "Polyline Offset"
     }
     TabButton {
-      text: "Boolean Ops"
+      text: "Polyline Combine"
     }
     TabButton {
       text: "Hilbert Curve"
@@ -33,8 +33,8 @@ ApplicationWindow {
         anchors.margins: 2
         currentIndex: tabBar.currentIndex
 
-        OffsetAlgorithmScene {}
-        BooleanOpsAlgorithmScene {}
+        PlineOffsetScene {}
+        PlineCombineScene {}
         HilbertCurveScene {}
       }
 

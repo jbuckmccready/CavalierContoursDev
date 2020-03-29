@@ -1,12 +1,70 @@
 #include "plineoffsetalgorithmview.h"
+#include "cavc/polylineoffset.h"
+#include "clipper/clipper.hpp"
 #include "graphicshelpers.h"
 #include "plinesegmentnode.h"
 #include "polylinenode.h"
 #include "rawoffsetsegmentsnode.h"
 #include "spatialindexboundingboxesnode.h"
+#include <QRandomGenerator>
 #include <QSGNode>
 #include <QSGTransformNode>
 using namespace cavc;
+
+namespace {
+// functions for rendering offsets done by clipper
+const double clipperScaleFactor = 1e8;
+const double unscaledArcError = 0.01;
+
+ClipperLib::Path polylineToClipperPath(const cavc::Polyline<double> &pline,
+                                       double unscaledArcError) {
+  auto noArcsPline = cavc::convertArcsToLines(pline, unscaledArcError);
+
+  ClipperLib::Path clipperPath;
+  clipperPath.reserve(noArcsPline.size());
+  for (const auto &v : noArcsPline.vertexes()) {
+    ClipperLib::cInt xInt = static_cast<ClipperLib::cInt>(v.x() * clipperScaleFactor);
+    ClipperLib::cInt yInt = static_cast<ClipperLib::cInt>(v.y() * clipperScaleFactor);
+    clipperPath.push_back(ClipperLib::IntPoint(xInt, yInt));
+  }
+
+  return clipperPath;
+}
+
+cavc::Polyline<double> clipperPathToPolyline(const ClipperLib::Path &path) {
+  cavc::Polyline<double> result;
+  result.isClosed() = true;
+  result.vertexes().reserve(path.size());
+  for (const auto &pt : path) {
+    result.addVertex(pt.X / clipperScaleFactor, pt.Y / clipperScaleFactor, 0);
+  }
+
+  return result;
+}
+
+void clipperOffset(const ClipperLib::Path &path, double unscaledDelta, double unscaledArcError,
+                   ClipperLib::Paths &results) {
+  ClipperLib::ClipperOffset clipperOffset(2, unscaledArcError * clipperScaleFactor);
+  clipperOffset.AddPath(path, ClipperLib::JoinType::jtRound, ClipperLib::EndType::etClosedPolygon);
+  // negate delta to match orientation that cavc uses
+  clipperOffset.Execute(results, -unscaledDelta * clipperScaleFactor);
+}
+
+std::vector<cavc::Polyline<double>> offsetUsingClipper(const cavc::Polyline<double> &pline,
+                                                       double delta) {
+
+  auto clipperPath = polylineToClipperPath(pline, unscaledArcError);
+  ClipperLib::Paths clipperOffsResult;
+  clipperOffset(clipperPath, delta, unscaledArcError, clipperOffsResult);
+
+  std::vector<cavc::Polyline<double>> result;
+  for (const auto &path : clipperOffsResult) {
+    result.push_back(clipperPathToPolyline(path));
+  }
+
+  return result;
+}
+}
 
 PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
     : GeometryCanvasItem(parent),
@@ -49,35 +107,69 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   //  m_inputPolyline.addVertex(2, 5, 0);
   //  m_inputPolyline.isClosed() = true;
 
-  //  m_inputPolyline.addVertex(0,0,0);
-  //  m_inputPolyline.addVertex(10,0,0);
-  //  m_inputPolyline.addVertex(10,10,0);
-  //  m_inputPolyline.addVertex(0,10,0);
+  //  m_inputPolyline.addVertex(0, 0, 0);
+  //  m_inputPolyline.addVertex(20, 0, 0);
+  //  m_inputPolyline.addVertex(20, 10, 0);
+  //  m_inputPolyline.addVertex(0, 10, 0);
   //  m_inputPolyline.isClosed() = true;
 
-  m_inputPolyline.addVertex(0, 25, 1);
-  m_inputPolyline.addVertex(0, 0, 0);
-  m_inputPolyline.addVertex(2, 0, 1);
-  m_inputPolyline.addVertex(10, 0, -0.5);
-  m_inputPolyline.addVertex(8, 9, 0.374794619217547);
-  m_inputPolyline.addVertex(21, 0, 0);
-  m_inputPolyline.addVertex(23, 0, 1);
-  m_inputPolyline.addVertex(32, 0, -0.5);
-  m_inputPolyline.addVertex(28, 0, 0.5);
-  m_inputPolyline.addVertex(39, 21, 0);
-  m_inputPolyline.addVertex(28, 12, 0.5);
-  m_inputPolyline.isClosed() = true;
+      m_inputPolyline.addVertex(0, 25, 1);
+      m_inputPolyline.addVertex(0, 0, 0);
+      m_inputPolyline.addVertex(2, 0, 1);
+    //  Vector2<double> center(5,0);
+    //  double radius = 3;
+    //  std::size_t segCount = 100;
+    //  for (std::size_t i = 1; i < segCount; ++i) {
+    //    double angle = static_cast<double>(i) / segCount * utils::pi<double>();
+    //    double x = center.x() - radius * std::cos(angle) +
+    // QRandomGenerator::global()->bounded(1e-3);
+    //    double y = center.y() - radius * std::sin(angle) +
+    // QRandomGenerator::global()->bounded(1e-3);
+    //    m_inputPolyline.addVertex(x, y, 0);
+    //  }
+      m_inputPolyline.addVertex(10, 0, -0.5);
+      m_inputPolyline.addVertex(8, 9, 0.374794619217547);
+      m_inputPolyline.addVertex(21, 0, 0);
+      m_inputPolyline.addVertex(23, 0, 1);
+      m_inputPolyline.addVertex(32, 0, -0.5);
+      m_inputPolyline.addVertex(28, 0, 0.5);
+      m_inputPolyline.addVertex(39, 21, 0);
+      m_inputPolyline.addVertex(28, 12, 0.5);
+      m_inputPolyline.isClosed() = true;
 
-  //  auto radius = 40;
-  //  auto centerX = 0;
-  //  auto centerY = 0;
-  //  std::size_t segmentCount = 10;
-  //  for (std::size_t i = 0; i < segmentCount; ++i) {
-  //    double angle = static_cast<double>(i) * utils::tau<double>() / segmentCount;
-  //    m_inputPolyline.addVertex(radius * std::cos(angle) + centerX,
-  //                              radius * std::sin(angle) + centerY, i % 2 == 0 ? 1 : -1);
+  //  m_inputPolyline.addVertex(1.544473, -12.193867, 0);
+  //  m_inputPolyline.addVertex(2.325014, -12.974407, 0);
+  //  m_inputPolyline.addVertex(2.607337, -13.024229, 0);
+  //  m_inputPolyline.addVertex(14.514728, -9.553315, 0);
+  //  m_inputPolyline.addVertex(14.232405, -8.241343, 0);
+  //  m_inputPolyline.isClosed() = true;
+
+  //  m_inputPolyline = parallelOffset(m_inputPolyline, 1.05 / 2)[0];
+  //  auto rawOffs = createRawOffsetPline(m_inputPolyline, -0.5);
+
+  //  double f = 28;
+  //  for (std::size_t i = 0; i < m_inputPolyline.size();++i) {
+  //    const auto &v = m_inputPolyline[i];
+  //    m_inputPolyline[i] = PlineVertex<double>(f * v.x(), f * v.y(), v.bulge());
   //  }
-  //  m_inputPolyline.isClosed() = true;
+
+  //  m_inputPolyline = parallelOffset(m_inputPolyline, f * 1.05 / 2)[0];
+
+  //  for (std::size_t i = 0; i < m_inputPolyline.size();++i) {
+  //    const auto &v = m_inputPolyline[i];
+  //    m_inputPolyline[i] = PlineVertex<double>(v.x() / f, v.y() / f, v.bulge());
+  //  }
+
+//  auto radius = 40;
+//  auto centerX = 0;
+//  auto centerY = 0;
+//  std::size_t segmentCount = 16;
+//  for (std::size_t i = 0; i < segmentCount; ++i) {
+//    double angle = static_cast<double>(i) * utils::tau<double>() / segmentCount;
+//    m_inputPolyline.addVertex(radius * std::cos(angle) + centerX,
+//                              radius * std::sin(angle) + centerY, i % 2 == 0 ? 1 : -1);
+//  }
+//  m_inputPolyline.isClosed() = true;
 }
 
 bool PlineOffsetAlgorithmView::interacting() const { return m_interacting; }
@@ -265,17 +357,18 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   }
 
   rootNode->setMatrix(m_realToUICoord);
-  auto prunedPline = pruneSingularities(m_inputPolyline);
+  auto prunedPline = pruneSingularities(m_inputPolyline, utils::realPrecision<double>());
   m_origPolylineNode->setVertexesVisible(m_showOrigPlineVertexes);
-  m_origPolylineNode->updateGeometry(prunedPline, m_arcApproxError);
+  m_origPolylineNode->updateGeometry(prunedPline, PolylineNode::NormalPath, m_arcApproxError);
 
   // raw offset polyline
   cavc::Polyline<double> rawOffsetPline;
   if (m_showRawOffsetPolyline) {
-    rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
+    rawOffsetPline = internal::createRawOffsetPline(prunedPline, m_plineOffset);
     m_rawOffsetPolylineNode->setIsVisible(true);
     m_rawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
-    m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, m_arcApproxError);
+    m_rawOffsetPolylineNode->updateGeometry(rawOffsetPline, PolylineNode::NormalPath,
+                                            m_arcApproxError);
   } else {
     m_rawOffsetPolylineNode->setIsVisible(false);
   }
@@ -283,10 +376,11 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // dual raw offset polyline
   cavc::Polyline<double> dualRawOffsetPline;
   if (m_showRawOffsetPolyline && m_showDualRawOffsetPolyline) {
-    dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset);
+    dualRawOffsetPline = internal::createRawOffsetPline(prunedPline, -m_plineOffset);
     m_dualRawOffsetPolylineNode->setIsVisible(true);
     m_dualRawOffsetPolylineNode->setVertexesVisible(m_showRawOffsetPlineVertexes);
-    m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, m_arcApproxError);
+    m_dualRawOffsetPolylineNode->updateGeometry(dualRawOffsetPline, PolylineNode::NormalPath,
+                                                m_arcApproxError);
   } else {
     m_dualRawOffsetPolylineNode->setIsVisible(false);
   }
@@ -294,7 +388,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // raw offset segments
   if (m_showRawOffsetSegments) {
     m_untrimmedSegmentsParentNode->setOpacity(1);
-    auto rawOffsetSegments = createUntrimmedOffsetSegments(prunedPline, m_plineOffset);
+    auto rawOffsetSegments = internal::createUntrimmedOffsetSegments(prunedPline, m_plineOffset);
     m_untrimmedSegmentsParentNode->updateGeometry(rawOffsetSegments, m_arcApproxError);
   } else {
     m_untrimmedSegmentsParentNode->setOpacity(0);
@@ -311,13 +405,16 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   } break;
   case PlineOffsetAlgorithmView::RawOffsetPolyline: {
     if (rawOffsetPline.size() == 0) {
-      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
+      rawOffsetPline = internal::createRawOffsetPline(prunedPline, m_plineOffset);
     }
     auto spatialIndex = createApproxSpatialIndex(rawOffsetPline);
     allSelfIntersects(rawOffsetPline, selfIntersects, spatialIndex);
 
     if (dualRawOffsetPline.size() != 0) {
-      intersects(rawOffsetPline, dualRawOffsetPline, spatialIndex, selfIntersects);
+      PlineIntersectsResult<double> intrResults;
+      findIntersects(rawOffsetPline, dualRawOffsetPline, spatialIndex, intrResults);
+      std::copy(intrResults.intersects.begin(), intrResults.intersects.end(),
+                std::back_inserter(selfIntersects));
     }
   } break;
   }
@@ -404,7 +501,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   // slices
   if (m_finishedPolyline != PlineOffsetAlgorithmView::NoFinishedPline) {
     if (rawOffsetPline.size() == 0) {
-      rawOffsetPline = createRawOffsetPline(prunedPline, m_plineOffset);
+      rawOffsetPline = internal::createRawOffsetPline(prunedPline, m_plineOffset);
     }
     if (!m_slicesParentNode) {
       m_slicesParentNode = new QSGOpacityNode();
@@ -412,14 +509,14 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     }
 
     m_slicesParentNode->setOpacity(1);
-    PolylineNode *sliceNode = static_cast<PolylineNode *>(m_slicesParentNode->firstChild());
-    std::size_t sliceIndex = 0;
     if (dualRawOffsetPline.size() == 0) {
-      dualRawOffsetPline = createRawOffsetPline(prunedPline, -m_plineOffset);
+      dualRawOffsetPline = internal::createRawOffsetPline(prunedPline, -m_plineOffset);
     }
-    auto slices =
-        dualSliceAtIntersects(prunedPline, rawOffsetPline, dualRawOffsetPline, m_plineOffset);
+    auto slices = internal::dualSliceAtIntersectsForOffset(prunedPline, rawOffsetPline,
+                                                           dualRawOffsetPline, m_plineOffset);
 
+    std::size_t sliceIndex = 0;
+    PolylineNode *sliceNode = static_cast<PolylineNode *>(m_slicesParentNode->firstChild());
     auto addPline = [&](cavc::Polyline<double> const &pline) {
       if (!sliceNode) {
         sliceNode = new PolylineNode();
@@ -428,7 +525,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       sliceNode->setColor(gh::indexToColor(sliceIndex));
       sliceNode->setIsVisible(true);
       sliceNode->setVertexesVisible(false);
-      sliceNode->updateGeometry(pline, m_arcApproxError);
+      sliceNode->updateGeometry(pline, PolylineNode::NormalPath, m_arcApproxError);
       sliceNode = static_cast<PolylineNode *>(sliceNode->nextSibling());
       sliceIndex++;
     };
@@ -438,15 +535,15 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         addPline(slice.pline);
       }
     } else if (m_finishedPolyline == PlineOffsetAlgorithmView::DualSlices) {
-      auto dualSlices =
-          dualSliceAtIntersects(prunedPline, dualRawOffsetPline, rawOffsetPline, -m_plineOffset);
+      auto dualSlices = internal::dualSliceAtIntersectsForOffset(prunedPline, dualRawOffsetPline,
+                                                                 rawOffsetPline, -m_plineOffset);
       slices.insert(slices.end(), dualSlices.begin(), dualSlices.end());
       for (const auto &slice : slices) {
         addPline(slice.pline);
       }
     } else {
       auto stichedPlines =
-          stitchSlicesTogether(slices, rawOffsetPline.isClosed(), rawOffsetPline.size() - 1);
+          stitchOffsetSlicesTogether(slices, rawOffsetPline.isClosed(), rawOffsetPline.size() - 1);
       for (const auto &pline : stichedPlines) {
         addPline(pline);
       }
@@ -479,7 +576,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
       offsetNode->setColor(color);
       offsetNode->setIsVisible(true);
       offsetNode->setVertexesVisible(false);
-      offsetNode->updateGeometry(pline, m_arcApproxError);
+      offsetNode->updateGeometry(pline, PolylineNode::NormalPath, m_arcApproxError);
       offsetNode = static_cast<PolylineNode *>(offsetNode->nextSibling());
     };
 
@@ -517,7 +614,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
 
         if (newOffsets.size() == 0) {
           for (const auto &pline : copy) {
-            auto rawOffsetPline = createRawOffsetPline(pline, m_plineOffset);
+            auto rawOffsetPline = internal::createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));
             auto retry = parallelOffset(pline, m_plineOffset);
           }
@@ -535,7 +632,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         double offsVal = i * m_plineOffset;
         auto offsPlines = parallelOffset(prunedPline, offsVal);
         if (offsPlines.size() == 0) {
-          auto rawOffsetPline = createRawOffsetPline(prunedPline, offsVal);
+          auto rawOffsetPline = internal::createRawOffsetPline(prunedPline, offsVal);
           addPline(rawOffsetPline, QColor("red"));
           break;
         } else {
