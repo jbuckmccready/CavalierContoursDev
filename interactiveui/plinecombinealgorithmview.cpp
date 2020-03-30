@@ -193,7 +193,7 @@ QSGNode *PlineCombineAlgorithmView::updatePaintNode(QSGNode *oldNode,
   }
   rootNode->setMatrix(m_realToUICoord);
 
-  setWindingNumber(cavc::windingNumber(m_plineA, m_testPoint[0].pos()));
+  setWindingNumber(cavc::getWindingNumber(m_plineA, m_testPoint[0].pos()));
 
   m_polylineANode->setVertexesVisible(m_showVertexes);
   m_polylineBNode->setVertexesVisible(m_showVertexes);

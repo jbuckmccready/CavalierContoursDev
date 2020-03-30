@@ -583,7 +583,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
     if (prunedPline.isClosed()) {
       // folded repeat offsets
       std::vector<cavc::Polyline<double>> prevOffsets;
-      double origPlineA = area(prunedPline);
+      double origPlineA = getArea(prunedPline);
       if (!prunedPline.isClosed() || std::abs(origPlineA) > 1e-4) {
         prevOffsets.push_back(prunedPline);
       }
@@ -607,7 +607,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
                                           if (!prunedPline.isClosed()) {
                                             return false;
                                           }
-                                          double a = area(pline);
+                                          double a = getArea(pline);
                                           return (a > 0 != origPlineA > 0) || std::abs(a) < 1e-4;
                                         }),
                          newOffsets.end());
