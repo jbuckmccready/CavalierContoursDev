@@ -13,7 +13,7 @@ public:
   void updateGeometry(cavc::StaticSpatialIndex<Real, N> const &spatialIndex) {
     auto bbNode = static_cast<FlatColorGeometryNode *>(this->firstChild());
 
-    auto bbVisitor = [&](Real minX, Real minY, Real maxX, Real maxY, std::size_t level) {
+    auto bbVisitor = [&](std::size_t level, Real minX, Real minY, Real maxX, Real maxY) {
       if (!bbNode) {
         bbNode = new FlatColorGeometryNode();
         bbNode->setFlag(QSGNode::OwnedByParent);
@@ -33,6 +33,8 @@ public:
       bbNode->markDirty(DirtyGeometry);
 
       bbNode = static_cast<FlatColorGeometryNode *>(bbNode->nextSibling());
+
+      return true;
     };
 
     spatialIndex.visitBoundingBoxes(bbVisitor);
