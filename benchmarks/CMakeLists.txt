@@ -17,30 +17,21 @@ macro(add_benchmark name)
     PRIVATE CavalierContours)
   target_link_libraries(${name}
     PRIVATE benchmark::benchmark)
+	if (MSVC)
+        target_link_options(${name} PRIVATE $<$<CONFIG:RELWITHDEBINFO>:/PROFILE>)
+    endif()
 endmacro()
 
 add_benchmark(offsetbenchmarks)
+add_benchmark(spatialindexbenchmarks)
+add_benchmark(extentsbenchmarks)
+add_benchmark(areabenchmarks)
+add_benchmark(pathlengthbenchmarks)
+add_benchmark(windingnumberbenchmarks)
+add_benchmark(combinebenchmarks)
+
 add_benchmark(clipperbenchmarks)
 target_link_libraries(clipperbenchmarks
   PRIVATE clipper_static)
-add_benchmark(spatialindexbenchmarks)
-
-#add_executable(Benchmarks benchmarks.cpp)
-#add_executable(ClipperBenchmarks clipperbenchmarks.cpp)
 
 add_test(Benchmarks COMMAND Benchmarks)
-
-#target_link_libraries(Benchmarks
-#  PRIVATE CavalierContours)
-
-#target_link_libraries(Benchmarks
-#  PRIVATE benchmark::benchmark)
-
-#target_link_libraries(ClipperBenchmarks
-#  PRIVATE CavalierContours)
-
-#target_link_libraries(ClipperBenchmarks
-#  PRIVATE clipper_static)
-
-#target_link_libraries(ClipperBenchmarks
-#  PRIVATE benchmark::benchmark)
