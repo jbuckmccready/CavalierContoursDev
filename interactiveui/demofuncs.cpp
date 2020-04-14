@@ -1,5 +1,5 @@
 #include "demofuncs.h"
-#include "cavc/staticspatialindex.h"
+#include "cavc/staticspatialindex.hpp"
 
 DemoFuncs::DemoFuncs(QObject *parent) : QObject(parent) {}
 

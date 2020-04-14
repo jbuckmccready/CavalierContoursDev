@@ -1,8 +1,8 @@
 #ifndef POLYLINENODE_H
 #define POLYLINENODE_H
 
-#include "cavc/polyline.h"
-#include "cavc/vector2.h"
+#include "cavc/polyline.hpp"
+#include "cavc/vector2.hpp"
 #include <QSGFlatColorMaterial>
 #include <QSGOpacityNode>
 #include <vector>

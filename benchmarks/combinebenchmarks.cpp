@@ -1,5 +1,5 @@
 #include "benchmarkprofiles.h"
-#include "cavc/polylinecombine.h"
+#include "cavc/polylinecombine.hpp"
 #include <benchmark/benchmark.h>
 
 struct CombineShiftedSetup {

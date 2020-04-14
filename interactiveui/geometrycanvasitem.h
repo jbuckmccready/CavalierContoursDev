@@ -1,7 +1,7 @@
 #ifndef GEOMETRYCANVASITEM_H
 #define GEOMETRYCANVASITEM_H
 
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include <QMatrix4x4>
 #include <QQuickItem>
 

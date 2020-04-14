@@ -1,4 +1,4 @@
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include <benchmark/benchmark.h>
 struct TestProfile {
   std::size_t offsetCount;

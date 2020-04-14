@@ -1,7 +1,7 @@
 #ifndef SPATIALINDEXBOUNDINGBOXESNODE_H
 #define SPATIALINDEXBOUNDINGBOXESNODE_H
 
-#include "cavc/staticspatialindex.h"
+#include "cavc/staticspatialindex.hpp"
 #include "flatcolorgeometrynode.h"
 #include "graphicshelpers.h"
 #include <QSGOpacityNode>

@@ -1,5 +1,5 @@
 #include "plineoffsetalgorithmview.h"
-#include "cavc/polylineoffset.h"
+#include "cavc/polylineoffset.hpp"
 #include "clipper/clipper.hpp"
 #include "graphicshelpers.h"
 #include "plinesegmentnode.h"

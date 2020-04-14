@@ -1,5 +1,5 @@
 #include "geometrycanvasitem.h"
-#include "cavc/mathutils.h"
+#include "cavc/mathutils.hpp"
 using namespace cavc;
 
 GeometryCanvasItem::GeometryCanvasItem(QQuickItem *parent)

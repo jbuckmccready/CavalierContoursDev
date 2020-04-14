@@ -1,6 +1,6 @@
 #include "clipper/clipper.hpp"
 #include "benchmarkprofiles.h"
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include <benchmark/benchmark.h>
 
 const double clipperScaleFactor = 1e8;

@@ -1,5 +1,5 @@
 #include "benchmarkprofiles.h"
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include <benchmark/benchmark.h>
 
 static void area(NoSetup, TestProfile const &profile) {

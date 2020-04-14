@@ -1,6 +1,6 @@
 #include "plinecombinealgorithmview.h"
-#include "cavc/polylinecombine.h"
-#include "cavc/polylineintersects.h"
+#include "cavc/polylinecombine.hpp"
+#include "cavc/polylineintersects.hpp"
 #include "graphicshelpers.h"
 #include "polylinenode.h"
 #include <QSGGeometryNode>

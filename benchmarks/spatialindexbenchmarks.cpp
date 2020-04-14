@@ -1,5 +1,5 @@
 #include "benchmarkprofiles.h"
-#include "cavc/staticspatialindex.h"
+#include "cavc/staticspatialindex.hpp"
 #include <benchmark/benchmark.h>
 
 static void createIndex(NoSetup, TestProfile const &profile) {

@@ -1,7 +1,7 @@
 #ifndef PLINESEGMENTNODE_H
 #define PLINESEGMENTNODE_H
 
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include "flatcolorgeometrynode.h"
 
 class PlineSegmentNode : public FlatColorGeometryNode {

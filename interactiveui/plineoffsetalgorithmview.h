@@ -1,7 +1,7 @@
 #ifndef PLINEOFFSETALGORITHMVIEW_H
 #define PLINEOFFSETALGORITHMVIEW_H
 
-#include "cavc/polyline.h"
+#include "cavc/polyline.hpp"
 #include "geometrycanvasitem.h"
 #include <QMatrix4x4>
 class PolylineNode;
