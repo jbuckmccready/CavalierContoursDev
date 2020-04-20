@@ -32,7 +32,7 @@ Rectangle {
       property real m_x2: 0
       property real m_zoom1: 1
       property real m_zoom2: 1
-      property real m_max: 5
+      property real m_max: 10
       property real m_min: 0.05
 
       onPinchStarted: {

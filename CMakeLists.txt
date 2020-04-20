@@ -5,4 +5,3 @@ SET(CAVC_HEADER_ONLY ON CACHE BOOL "using headers only")
 # add subdir projects
 add_subdirectory(CavalierContours)
 add_subdirectory(interactiveui)
-add_subdirectory(benchmarks)
