@@ -18,6 +18,9 @@ ApplicationWindow {
       text: "Polyline Combine"
     }
     TabButton {
+      text: "Polyline Offset Islands"
+    }
+    TabButton {
       text: "Hilbert Curve"
     }
   }
@@ -35,6 +38,7 @@ ApplicationWindow {
 
         PlineOffsetScene {}
         PlineCombineScene {}
+        PlineOffsetIslandsScene {}
         HilbertCurveScene {}
       }
 

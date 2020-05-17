@@ -7,7 +7,7 @@ SplitView {
   GeometrySceneView {
     SplitView.fillWidth: true
     PlineOffsetAlgorithmView {
-      id: polylineView
+      id: algorithmView
       anchors.fill: parent
       spatialIndexTarget: spatialIndexTargetComboBox.currentIndex
       selfIntersectsTarget: selfIntersectsTargetComboBox.currentIndex
@@ -48,11 +48,11 @@ SplitView {
           Slider {
             id: offsetSlider
             anchors.top: offsetTextField.bottom
-            from: -15
-            to: 15
-            value: polylineView.plineOffset
+            from: -40
+            to: 40
+            value: algorithmView.plineOffset
             onValueChanged: {
-              polylineView.plineOffset = value;
+              algorithmView.plineOffset = value;
             }
           }
 
@@ -77,13 +77,13 @@ SplitView {
 
         TextField {
           validator: IntValidator { bottom: 0; top: 1000 }
-          text: polylineView.repeatOffsetCount
+          text: algorithmView.offsetCount
           onTextChanged: {
             let c = parseInt(text);
             if (isNaN(c)) {
               return;
             }
-            polylineView.repeatOffsetCount = c;
+            algorithmView.offsetCount = c;
           }
         }
 
@@ -93,9 +93,9 @@ SplitView {
 
     CheckBox {
       text: "Show Original Polyline Vertexes"
-      checked: polylineView.showOrigPlineVertexes
+      checked: algorithmView.showOrigPlineVertexes
       onCheckedChanged: {
-        polylineView.showOrigPlineVertexes = checked;
+        algorithmView.showOrigPlineVertexes = checked;
       }
     }
 
@@ -106,35 +106,35 @@ SplitView {
         CheckBox {
           id: showRawOffsetCheckBox
           text: "Show Raw Offset Polyline"
-          checked: polylineView.showRawOffsetPolyline
+          checked: algorithmView.showRawOffsetPolyline
           onCheckedChanged: {
-            polylineView.showRawOffsetPolyline = checked;
+            algorithmView.showRawOffsetPolyline = checked;
           }
         }
 
         CheckBox {
           enabled: showRawOffsetCheckBox.checked
           text: "Show Dual Raw Offset Polyline"
-          checked: polylineView.showDualRawOffsetPolyline
+          checked: algorithmView.showDualRawOffsetPolyline
           onCheckedChanged: {
-            polylineView.showDualRawOffsetPolyline = checked;
+            algorithmView.showDualRawOffsetPolyline = checked;
           }
         }
 
         CheckBox {
           enabled: showRawOffsetCheckBox.checked
           text: "Show Raw Offset Polyline Vertexes"
-          checked: polylineView.showRawOffsetPlineVertexes
+          checked: algorithmView.showRawOffsetPlineVertexes
           onCheckedChanged: {
-            polylineView.showRawOffsetPlineVertexes = checked;
+            algorithmView.showRawOffsetPlineVertexes = checked;
           }
         }
 
         CheckBox {
           text: "Show Raw Offset Segments"
-          checked: polylineView.showRawOffsetSegments
+          checked: algorithmView.showRawOffsetSegments
           onCheckedChanged: {
-            polylineView.showRawOffsetSegments = checked;
+            algorithmView.showRawOffsetSegments = checked;
           }
         }
 
@@ -175,9 +175,9 @@ SplitView {
 
     CheckBox {
       text: "Show End Intersect Circles"
-      checked: polylineView.showEndPointIntersectCircles
+      checked: algorithmView.showEndPointIntersectCircles
       onCheckedChanged: {
-        polylineView.showEndPointIntersectCircles = checked;
+        algorithmView.showEndPointIntersectCircles = checked;
       }
     }
 

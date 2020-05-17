@@ -19,6 +19,7 @@ add_executable(InteractiveUI
   geometrycanvasitem.cpp
   plineoffsetalgorithmview.cpp
   plinecombinealgorithmview.cpp
+  plineoffsetislandsalgorithmview.cpp
   demofuncs.cpp
   graphicshelpers.cpp
   polylinenode.cpp

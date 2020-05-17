@@ -1,4 +1,5 @@
 #include "plineoffsetalgorithmview.h"
+#include "cavc/internal/diagnostics.hpp"
 #include "cavc/polylineoffset.hpp"
 #include "clipper/clipper.hpp"
 #include "graphicshelpers.h"
@@ -64,7 +65,7 @@ std::vector<cavc::Polyline<double>> offsetUsingClipper(const cavc::Polyline<doub
 
   return result;
 }
-}
+} // namespace
 
 PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
     : GeometryCanvasItem(parent),
@@ -86,7 +87,7 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
       m_showRawOffsetPolyline(false),
       m_showRawOffsetPlineVertexes(false),
       m_plineOffset(0.5),
-      m_repeatOffsetCount(0),
+      m_offsetCount(0),
       m_spatialIndexTarget(None),
       m_selfIntersectsTarget(None),
       m_finishedPolyline(NoFinishedPline),
@@ -113,29 +114,29 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   //  m_inputPolyline.addVertex(0, 10, 0);
   //  m_inputPolyline.isClosed() = true;
 
-      m_inputPolyline.addVertex(0, 25, 1);
-      m_inputPolyline.addVertex(0, 0, 0);
-      m_inputPolyline.addVertex(2, 0, 1);
-    //  Vector2<double> center(5,0);
-    //  double radius = 3;
-    //  std::size_t segCount = 100;
-    //  for (std::size_t i = 1; i < segCount; ++i) {
-    //    double angle = static_cast<double>(i) / segCount * utils::pi<double>();
-    //    double x = center.x() - radius * std::cos(angle) +
-    // QRandomGenerator::global()->bounded(1e-3);
-    //    double y = center.y() - radius * std::sin(angle) +
-    // QRandomGenerator::global()->bounded(1e-3);
-    //    m_inputPolyline.addVertex(x, y, 0);
-    //  }
-      m_inputPolyline.addVertex(10, 0, -0.5);
-      m_inputPolyline.addVertex(8, 9, 0.374794619217547);
-      m_inputPolyline.addVertex(21, 0, 0);
-      m_inputPolyline.addVertex(23, 0, 1);
-      m_inputPolyline.addVertex(32, 0, -0.5);
-      m_inputPolyline.addVertex(28, 0, 0.5);
-      m_inputPolyline.addVertex(39, 21, 0);
-      m_inputPolyline.addVertex(28, 12, 0.5);
-      m_inputPolyline.isClosed() = true;
+  m_inputPolyline.addVertex(0, 25, 1);
+  m_inputPolyline.addVertex(0, 0, 0);
+  m_inputPolyline.addVertex(2, 0, 1);
+  //  Vector2<double> center(5,0);
+  //  double radius = 3;
+  //  std::size_t segCount = 100;
+  //  for (std::size_t i = 1; i < segCount; ++i) {
+  //    double angle = static_cast<double>(i) / segCount * utils::pi<double>();
+  //    double x = center.x() - radius * std::cos(angle) +
+  // QRandomGenerator::global()->bounded(1e-3);
+  //    double y = center.y() - radius * std::sin(angle) +
+  // QRandomGenerator::global()->bounded(1e-3);
+  //    m_inputPolyline.addVertex(x, y, 0);
+  //  }
+  m_inputPolyline.addVertex(10, 0, -0.5);
+  m_inputPolyline.addVertex(8, 9, 0.374794619217547);
+  m_inputPolyline.addVertex(21, 0, 0);
+  m_inputPolyline.addVertex(23, 0, 1);
+  m_inputPolyline.addVertex(32, 0, -0.5);
+  m_inputPolyline.addVertex(28, 0, 0.5);
+  m_inputPolyline.addVertex(39, 21, 0);
+  m_inputPolyline.addVertex(28, 12, 0.5);
+  m_inputPolyline.isClosed() = true;
 
   //  m_inputPolyline.addVertex(1.544473, -12.193867, 0);
   //  m_inputPolyline.addVertex(2.325014, -12.974407, 0);
@@ -160,16 +161,16 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
   //    m_inputPolyline[i] = PlineVertex<double>(v.x() / f, v.y() / f, v.bulge());
   //  }
 
-//  auto radius = 40;
-//  auto centerX = 0;
-//  auto centerY = 0;
-//  std::size_t segmentCount = 16;
-//  for (std::size_t i = 0; i < segmentCount; ++i) {
-//    double angle = static_cast<double>(i) * utils::tau<double>() / segmentCount;
-//    m_inputPolyline.addVertex(radius * std::cos(angle) + centerX,
-//                              radius * std::sin(angle) + centerY, i % 2 == 0 ? 1 : -1);
-//  }
-//  m_inputPolyline.isClosed() = true;
+  //  auto radius = 40;
+  //  auto centerX = 0;
+  //  auto centerY = 0;
+  //  std::size_t segmentCount = 16;
+  //  for (std::size_t i = 0; i < segmentCount; ++i) {
+  //    double angle = static_cast<double>(i) * utils::tau<double>() / segmentCount;
+  //    m_inputPolyline.addVertex(radius * std::cos(angle) + centerX,
+  //                              radius * std::sin(angle) + centerY, i % 2 == 0 ? 1 : -1);
+  //  }
+  //  m_inputPolyline.isClosed() = true;
 }
 
 bool PlineOffsetAlgorithmView::interacting() const { return m_interacting; }
@@ -273,15 +274,15 @@ void PlineOffsetAlgorithmView::setFinishedPolyline(
   emit finishedPolylineChanged(m_finishedPolyline);
 }
 
-int PlineOffsetAlgorithmView::offsetCount() const { return m_repeatOffsetCount; }
+int PlineOffsetAlgorithmView::offsetCount() const { return m_offsetCount; }
 
 void PlineOffsetAlgorithmView::setOffsetCount(int offsetCount) {
-  if (m_repeatOffsetCount == offsetCount)
+  if (m_offsetCount == offsetCount)
     return;
 
-  m_repeatOffsetCount = offsetCount;
+  m_offsetCount = offsetCount;
   update();
-  emit repeatOffsetCountChanged(m_repeatOffsetCount);
+  emit offsetCountChanged(m_offsetCount);
 }
 
 bool PlineOffsetAlgorithmView::showEndPointIntersectCircles() const {
@@ -463,7 +464,6 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         auto pt = cavc::pointOnCircle(rad, center, angle);
         vData[i].set(static_cast<float>(pt.x()), static_cast<float>(pt.y()));
       }
-
     };
 
     fillCircle(startNode, prunedPline[0].pos());
@@ -559,7 +559,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
   }
 
   // repeat offsets
-  if (m_repeatOffsetCount > 0 && !qFuzzyCompare(m_plineOffset, 0.0)) {
+  if (m_offsetCount > 0 && !qFuzzyCompare(m_plineOffset, 0.0)) {
     if (!m_repeatOffsetsParentNode) {
       m_repeatOffsetsParentNode = new QSGOpacityNode();
       rootNode->appendChildNode(m_repeatOffsetsParentNode);
@@ -588,7 +588,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         prevOffsets.push_back(prunedPline);
       }
 
-      for (int i = 0; i < m_repeatOffsetCount; ++i) {
+      for (int i = 0; i < m_offsetCount; ++i) {
         if (prevOffsets.size() == 0) {
           break;
         }
@@ -622,13 +622,22 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
 
         for (const auto &pline : newOffsets) {
           addPline(pline, QColor("blue"));
+          //          std::size_t vertexCount = pline.size();
+          //          double area = getArea(pline);
+          //          double length = getPathLength(pline);
+          //          auto extents = getExtents(pline);
+          //          qDebug().nospace() << qSetRealNumberPrecision(14) << "(" << vertexCount << ",
+          //          " << area
+          //                             << ", " << length << ", " << extents.xMin << ", " <<
+          //                             extents.yMin
+          //                             << ", " << extents.xMax << ", " << extents.yMax << ")";
         }
 
         prevOffsets = std::move(newOffsets);
       }
     } else {
       // direct (not folded) repeat offsets
-      for (int i = 1; i < m_repeatOffsetCount + 1; ++i) {
+      for (int i = 1; i < m_offsetCount + 1; ++i) {
         double offsVal = i * m_plineOffset;
         auto offsPlines = parallelOffset(prunedPline, offsVal);
         if (offsPlines.size() == 0) {
@@ -638,6 +647,15 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
         } else {
           for (auto const &pline : offsPlines) {
             addPline(pline, QColor("blue"));
+            //            std::size_t vertexCount = pline.size();
+            //            double area = getArea(pline);
+            //            double length = getPathLength(pline);
+            //            auto extents = getExtents(pline);
+            //            qDebug().nospace() << qSetRealNumberPrecision(14) << "(" << vertexCount <<
+            //            ", " << area
+            //                               << ", " << length << ", " << extents.xMin << ", " <<
+            //                               extents.yMin
+            //                               << ", " << extents.xMax << ", " << extents.yMax << ")";
           }
         }
       }

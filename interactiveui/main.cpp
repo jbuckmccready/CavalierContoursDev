@@ -1,6 +1,7 @@
 #include "demofuncs.h"
 #include "plinecombinealgorithmview.h"
 #include "plineoffsetalgorithmview.h"
+#include "plineoffsetislandsalgorithmview.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -18,6 +19,7 @@ int main(int argc, char *argv[]) {
 
   qmlRegisterType<PlineOffsetAlgorithmView>("Polyline", 1, 0, "PlineOffsetAlgorithmView");
   qmlRegisterType<PlineCombineAlgorithmView>("Polyline", 1, 0, "PlineCombineAlgorithmView");
+  qmlRegisterType<PlineOffsetIslandsAlgorithmView>("Polyline", 1, 0, "PlineOffsetIslandsAlgorithmView");
 
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 

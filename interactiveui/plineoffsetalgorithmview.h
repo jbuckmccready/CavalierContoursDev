@@ -3,7 +3,6 @@
 
 #include "cavc/polyline.hpp"
 #include "geometrycanvasitem.h"
-#include <QMatrix4x4>
 class PolylineNode;
 class RawOffsetSegmentsNode;
 class QSGGeometryNode;
@@ -30,8 +29,7 @@ class PlineOffsetAlgorithmView : public GeometryCanvasItem {
   Q_PROPERTY(FinishedPolyline finishedPolyline READ finishedPolyline WRITE setFinishedPolyline
                  NOTIFY finishedPolylineChanged)
   Q_PROPERTY(double plineOffset READ plineOffset WRITE setPlineOffset NOTIFY plineOffsetChanged)
-  Q_PROPERTY(
-      int repeatOffsetCount READ offsetCount WRITE setOffsetCount NOTIFY repeatOffsetCountChanged)
+  Q_PROPERTY(int offsetCount READ offsetCount WRITE setOffsetCount NOTIFY offsetCountChanged)
   Q_PROPERTY(bool showEndPointIntersectCircles READ showEndPointIntersectCircles WRITE
                  setShowEndPointIntersectCircles NOTIFY showEndPointIntersectCirclesChanged)
 public:
@@ -88,7 +86,7 @@ signals:
   void spatialIndexTargetChanged(TargetPolyline spatialIndexTarget);
   void selfIntersectsTargetChanged(TargetPolyline selfIntersectsTarget);
   void finishedPolylineChanged(FinishedPolyline finishedPolyline);
-  void repeatOffsetCountChanged(int repeatOffsetCount);
+  void offsetCountChanged(int repeatOffsetCount);
   void showEndPointIntersectCirclesChanged(bool showEndPointIntersectCircles);
   void showDualRawOffsetPolylineChanged(bool showDualRawOffsetPolyline);
 
@@ -127,7 +125,7 @@ private:
   bool m_showRawOffsetPolyline;
   bool m_showRawOffsetPlineVertexes;
   double m_plineOffset;
-  int m_repeatOffsetCount;
+  int m_offsetCount;
   TargetPolyline m_spatialIndexTarget;
   TargetPolyline m_selfIntersectsTarget;
   FinishedPolyline m_finishedPolyline;
