@@ -200,22 +200,25 @@ QSGNode *PlineOffsetIslandsAlgorithmView::updatePaintNode(QSGNode *oldNode,
 
   if (!utils::fuzzyEqual(m_offsetDelta, 0.0) && m_offsetCount > 0) {
     ParallelOffsetIslands<double> alg;
-    OffsetLoopSet<double> contourSet;
+    OffsetLoopSet<double> loopSet;
     for (auto const &loop : m_ccwLoops) {
-      contourSet.ccwLoops.push_back({0, loop, createApproxSpatialIndex(loop)});
+      loopSet.ccwLoops.push_back({0, loop, createApproxSpatialIndex(loop)});
     }
-    for (auto const &island : m_cwLoops) {
-      contourSet.cwLoops.push_back({0, island, createApproxSpatialIndex(island)});
+    for (auto const &loop : m_cwLoops) {
+      loopSet.cwLoops.push_back({0, loop, createApproxSpatialIndex(loop)});
     }
 
     int i = 0;
-    while (contourSet.ccwLoops.size() != 0 && i < m_offsetCount) {
-      contourSet = alg.compute(contourSet, m_offsetDelta);
-      for (auto const &c : contourSet.cwLoops) {
-        addPline(c.polyline);
+    while (i < m_offsetCount) {
+      loopSet = alg.compute(loopSet, m_offsetDelta);
+      if (loopSet.cwLoops.size() == 0 && loopSet.ccwLoops.size() == 0) {
+        break;
       }
-      for (auto const &c : contourSet.ccwLoops) {
-        addPline(c.polyline);
+      for (auto const &loop : loopSet.cwLoops) {
+        addPline(loop.polyline);
+      }
+      for (auto const &loop : loopSet.ccwLoops) {
+        addPline(loop.polyline);
       }
       i += 1;
     }
