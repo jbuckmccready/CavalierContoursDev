@@ -92,7 +92,8 @@ PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
       m_selfIntersectsTarget(None),
       m_finishedPolyline(NoFinishedPline),
       m_showEndPointIntersectCircles(false),
-      m_showDualRawOffsetPolyline(false) {
+      m_showDualRawOffsetPolyline(false),
+      m_showLastPrunedRawOffsets(false) {
 
   //  m_inputPolyline.addVertex(0, 0, 0.5);
   //  m_inputPolyline.addVertex(1, 1, 0.5);
@@ -309,6 +310,19 @@ void PlineOffsetAlgorithmView::setShowDualRawOffsetPolyline(bool showDualRawOffs
   m_showDualRawOffsetPolyline = showDualRawOffsetPolyline;
   update();
   emit showDualRawOffsetPolylineChanged(m_showDualRawOffsetPolyline);
+}
+
+bool PlineOffsetAlgorithmView::showLastPrunedRawOffsets() const {
+  return m_showLastPrunedRawOffsets;
+}
+
+void PlineOffsetAlgorithmView::setShowLastPrunedRawOffsets(bool showLastPrunedRawOffsets) {
+  if (m_showLastPrunedRawOffsets == showLastPrunedRawOffsets)
+    return;
+
+  m_showLastPrunedRawOffsets = showLastPrunedRawOffsets;
+  update();
+  emit showLastPrunedRawOffsetsChanged(m_showLastPrunedRawOffsets);
 }
 
 void PlineOffsetAlgorithmView::setInteracting(bool interacting) {
@@ -612,7 +626,7 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
                                         }),
                          newOffsets.end());
 
-        if (newOffsets.size() == 0) {
+        if (newOffsets.size() == 0 && m_showLastPrunedRawOffsets) {
           for (const auto &pline : copy) {
             auto rawOffsetPline = internal::createRawOffsetPline(pline, m_plineOffset);
             addPline(rawOffsetPline, QColor("red"));

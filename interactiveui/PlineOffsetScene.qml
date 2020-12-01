@@ -87,6 +87,13 @@ SplitView {
           }
         }
 
+        CheckBox {
+          text: "Show Last Pruned Raw Offsets"
+          checked: algorithmView.showLastPrunedRawOffsets
+          onCheckedChanged: {
+            algorithmView.showLastPrunedRawOffsets = checked;
+          }
+        }
       }
 
     }

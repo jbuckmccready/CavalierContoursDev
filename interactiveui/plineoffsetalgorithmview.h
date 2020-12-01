@@ -32,6 +32,8 @@ class PlineOffsetAlgorithmView : public GeometryCanvasItem {
   Q_PROPERTY(int offsetCount READ offsetCount WRITE setOffsetCount NOTIFY offsetCountChanged)
   Q_PROPERTY(bool showEndPointIntersectCircles READ showEndPointIntersectCircles WRITE
                  setShowEndPointIntersectCircles NOTIFY showEndPointIntersectCirclesChanged)
+  Q_PROPERTY(bool showLastPrunedRawOffsets READ showLastPrunedRawOffsets WRITE
+                 setShowLastPrunedRawOffsets NOTIFY showLastPrunedRawOffsetsChanged)
 public:
   enum TargetPolyline { None, OriginalPolyline, RawOffsetPolyline };
   Q_ENUM(TargetPolyline)
@@ -76,6 +78,9 @@ public:
   bool showDualRawOffsetPolyline() const;
   void setShowDualRawOffsetPolyline(bool showDualRawOffsetPolyline);
 
+  bool showLastPrunedRawOffsets() const;
+  void setShowLastPrunedRawOffsets(bool showLastPrunedRawOffsets);
+
 signals:
   void interactingChanged(bool interacting);
   void showRawOffsetSegmentsChanged(bool showRawOffsetSegments);
@@ -89,6 +94,7 @@ signals:
   void offsetCountChanged(int repeatOffsetCount);
   void showEndPointIntersectCirclesChanged(bool showEndPointIntersectCircles);
   void showDualRawOffsetPolylineChanged(bool showDualRawOffsetPolyline);
+  void showLastPrunedRawOffsetsChanged(bool showLastPrunedRawOffsets);
 
 protected:
   QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
@@ -131,6 +137,7 @@ private:
   FinishedPolyline m_finishedPolyline;
   bool m_showEndPointIntersectCircles;
   bool m_showDualRawOffsetPolyline;
+  bool m_showLastPrunedRawOffsets;
 };
 
 #endif // PLINEOFFSETALGORITHMVIEW_H
