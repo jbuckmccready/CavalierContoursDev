@@ -1,7 +1,6 @@
 #include "plineoffsetalgorithmview.h"
 #include "cavc/internal/diagnostics.hpp"
 #include "cavc/polylineoffset.hpp"
-#include "clipper/clipper.hpp"
 #include "graphicshelpers.h"
 #include "plinesegmentnode.h"
 #include "polylinenode.h"
@@ -11,61 +10,6 @@
 #include <QSGNode>
 #include <QSGTransformNode>
 using namespace cavc;
-
-namespace {
-// functions for rendering offsets done by clipper
-const double clipperScaleFactor = 1e8;
-const double unscaledArcError = 0.01;
-
-ClipperLib::Path polylineToClipperPath(const cavc::Polyline<double> &pline,
-                                       double unscaledArcError) {
-  auto noArcsPline = cavc::convertArcsToLines(pline, unscaledArcError);
-
-  ClipperLib::Path clipperPath;
-  clipperPath.reserve(noArcsPline.size());
-  for (const auto &v : noArcsPline.vertexes()) {
-    ClipperLib::cInt xInt = static_cast<ClipperLib::cInt>(v.x() * clipperScaleFactor);
-    ClipperLib::cInt yInt = static_cast<ClipperLib::cInt>(v.y() * clipperScaleFactor);
-    clipperPath.push_back(ClipperLib::IntPoint(xInt, yInt));
-  }
-
-  return clipperPath;
-}
-
-cavc::Polyline<double> clipperPathToPolyline(const ClipperLib::Path &path) {
-  cavc::Polyline<double> result;
-  result.isClosed() = true;
-  result.vertexes().reserve(path.size());
-  for (const auto &pt : path) {
-    result.addVertex(pt.X / clipperScaleFactor, pt.Y / clipperScaleFactor, 0);
-  }
-
-  return result;
-}
-
-void clipperOffset(const ClipperLib::Path &path, double unscaledDelta, double unscaledArcError,
-                   ClipperLib::Paths &results) {
-  ClipperLib::ClipperOffset clipperOffset(2, unscaledArcError * clipperScaleFactor);
-  clipperOffset.AddPath(path, ClipperLib::JoinType::jtRound, ClipperLib::EndType::etClosedPolygon);
-  // negate delta to match orientation that cavc uses
-  clipperOffset.Execute(results, -unscaledDelta * clipperScaleFactor);
-}
-
-std::vector<cavc::Polyline<double>> offsetUsingClipper(const cavc::Polyline<double> &pline,
-                                                       double delta) {
-
-  auto clipperPath = polylineToClipperPath(pline, unscaledArcError);
-  ClipperLib::Paths clipperOffsResult;
-  clipperOffset(clipperPath, delta, unscaledArcError, clipperOffsResult);
-
-  std::vector<cavc::Polyline<double>> result;
-  for (const auto &path : clipperOffsResult) {
-    result.push_back(clipperPathToPolyline(path));
-  }
-
-  return result;
-}
-} // namespace
 
 PlineOffsetAlgorithmView::PlineOffsetAlgorithmView(QQuickItem *parent)
     : GeometryCanvasItem(parent),
@@ -622,7 +566,8 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
                                             return false;
                                           }
                                           double a = getArea(pline);
-                                          return (a > 0 != origPlineA > 0) || std::abs(a) < 1e-4;
+                                          return ((a > 0) != (origPlineA > 0)) ||
+                                                 std::abs(a) < 1e-4;
                                         }),
                          newOffsets.end());
 

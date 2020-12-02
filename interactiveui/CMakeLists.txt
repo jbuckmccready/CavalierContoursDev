@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.11)
-include(clipper.cmake)
 
 project(InteractiveUI LANGUAGES CXX)
 
@@ -31,9 +30,6 @@ add_executable(InteractiveUI
 
 target_link_libraries(InteractiveUI
   PRIVATE CavalierContours)
-
-target_link_libraries(InteractiveUI
-  PRIVATE clipper_static)
 
 target_compile_definitions(InteractiveUI
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
