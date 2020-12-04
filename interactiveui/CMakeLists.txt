@@ -26,6 +26,8 @@ add_executable(InteractiveUI
   flatcolorgeometrynode.cpp
   rawoffsetsegmentsnode.cpp
   plinesegmentnode.cpp
+  simplecirclenode.cpp
+  pointsetnode.cpp
   qml.qrc)
 
 target_link_libraries(InteractiveUI

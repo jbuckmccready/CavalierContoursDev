@@ -3,6 +3,7 @@
 #include "cavc/polylineoffset.hpp"
 #include "graphicshelpers.h"
 #include "plinesegmentnode.h"
+#include "pointsetnode.h"
 #include "polylinenode.h"
 #include "rawoffsetsegmentsnode.h"
 #include "spatialindexboundingboxesnode.h"
@@ -380,19 +381,16 @@ QSGNode *PlineOffsetAlgorithmView::updatePaintNode(QSGNode *oldNode,
 
   if (selfIntersects.size() != 0) {
     if (!m_selfIntersectsNode) {
-      m_selfIntersectsNode = gh::createSimpleGeomNode(static_cast<int>(selfIntersects.size()),
-                                                      Qt::darkCyan, 8, QSGGeometry::DrawPoints);
+      m_selfIntersectsNode = new PointSetNode();
+      m_selfIntersectsNode->setColor(Qt::darkCyan);
       rootNode->appendChildNode(m_selfIntersectsNode);
     } else {
-      m_selfIntersectsNode->geometry()->allocate(static_cast<int>(selfIntersects.size()));
+      m_selfIntersectsNode->clear();
     }
 
-    QSGGeometry::Point2D *siVertexes = m_selfIntersectsNode->geometry()->vertexDataAsPoint2D();
-    for (std::size_t i = 0; i < selfIntersects.size(); ++i) {
-      siVertexes[i].set(static_cast<float>(selfIntersects[i].pos.x()),
-                        static_cast<float>(selfIntersects[i].pos.y()));
+    for (auto const &intr : selfIntersects) {
+      m_selfIntersectsNode->addPoint(intr.pos.x(), intr.pos.y());
     }
-    m_selfIntersectsNode->markDirty(QSGNode::DirtyGeometry);
   } else if (m_selfIntersectsNode) {
     rootNode->removeChildNode(m_selfIntersectsNode);
     delete m_selfIntersectsNode;

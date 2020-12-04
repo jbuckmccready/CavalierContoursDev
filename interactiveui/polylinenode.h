@@ -8,6 +8,7 @@
 #include <vector>
 
 class FlatColorGeometryNode;
+class PointSetNode;
 
 class PolylineNode : public QSGOpacityNode {
 public:
@@ -33,7 +34,7 @@ private:
   bool m_pathVisible;
   bool m_vertexesVisible;
   FlatColorGeometryNode *m_pathNode;
-  FlatColorGeometryNode *m_vertexesPointNode;
+  PointSetNode *m_vertexesNode;
   QColor m_pathColor;
   QColor m_vertexesColor;
   bool m_isVisible;

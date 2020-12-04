@@ -15,8 +15,10 @@ HEADERS += \
   interactiveui/plineoffsetalgorithmview.h \
   interactiveui/plineoffsetislandsalgorithmview.h \
   interactiveui/plinesegmentnode.h \
+  interactiveui/pointsetnode.h \
   interactiveui/polylinenode.h \
   interactiveui/rawoffsetsegmentsnode.h \
+  interactiveui/simplecirclenode.h \
   interactiveui/spatialindexboundingboxesnode.h \
 
 
@@ -30,8 +32,10 @@ SOURCES += \
   interactiveui/plineoffsetalgorithmview.cpp \
   interactiveui/plineoffsetislandsalgorithmview.cpp \
   interactiveui/plinesegmentnode.cpp \
+  interactiveui/pointsetnode.cpp \
   interactiveui/polylinenode.cpp \
   interactiveui/rawoffsetsegmentsnode.cpp \
+  interactiveui/simplecirclenode.cpp \
   interactiveui/spatialindexboundingboxesnode.cpp \
 
 INCLUDEPATH += CavalierContours/include

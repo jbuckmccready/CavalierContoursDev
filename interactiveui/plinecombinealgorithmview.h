@@ -5,6 +5,7 @@
 #include "geometrycanvasitem.h"
 
 class PolylineNode;
+class PointSetNode;
 class QSGGeometryNode;
 class QSGOpacityNode;
 
@@ -69,7 +70,7 @@ private:
   PolylineNode *m_polylineBNode;
   cavc::Polyline<double> m_testPoint;
   PolylineNode *m_testPointNode;
-  QSGGeometryNode *m_intersectsNode;
+  PointSetNode *m_intersectsNode;
   QSGOpacityNode *m_dynamicPlinesParentNode;
   int m_windingNumber;
 

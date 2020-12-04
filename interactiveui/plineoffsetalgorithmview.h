@@ -4,6 +4,7 @@
 #include "cavc/polyline.hpp"
 #include "geometrycanvasitem.h"
 class PolylineNode;
+class PointSetNode;
 class RawOffsetSegmentsNode;
 class QSGGeometryNode;
 class SpatialIndexBoundingBoxesNode;
@@ -110,7 +111,7 @@ private:
   PolylineNode *m_rawOffsetPolylineNode;
   PolylineNode *m_dualRawOffsetPolylineNode;
   RawOffsetSegmentsNode *m_untrimmedSegmentsParentNode;
-  QSGGeometryNode *m_selfIntersectsNode;
+  PointSetNode *m_selfIntersectsNode;
   SpatialIndexBoundingBoxesNode *m_boundingBoxesNode;
   QSGOpacityNode *m_slicesParentNode;
   QSGOpacityNode *m_repeatOffsetsParentNode;

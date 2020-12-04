@@ -1,14 +1,21 @@
 #include "polylinenode.h"
 #include "flatcolorgeometrynode.h"
 #include "graphicshelpers.h"
+#include "pointsetnode.h"
 #include <QDebug>
 using namespace cavc;
+
+namespace {
+void setOpacityNodeVisibility(QSGOpacityNode *node, bool isVisible) {
+  node->setOpacity(isVisible ? 1.0 : 0.0);
+}
+} // namespace
 
 PolylineNode::PolylineNode()
     : m_pathVisible(true),
       m_vertexesVisible(false),
       m_pathNode(nullptr),
-      m_vertexesPointNode(nullptr),
+      m_vertexesNode(nullptr),
       m_pathColor(Qt::blue),
       m_vertexesColor(Qt::red),
       m_isVisible(true) {}
@@ -49,8 +56,8 @@ const QColor &PolylineNode::vertexesColor() const { return m_vertexesColor; }
 void PolylineNode::setVertexesColor(const QColor &vertexesColor) {
   if (vertexesColor != m_vertexesColor) {
     m_vertexesColor = vertexesColor;
-    if (m_vertexesPointNode) {
-      m_vertexesPointNode->setColor(m_vertexesColor);
+    if (m_vertexesNode) {
+      m_vertexesNode->setColor(vertexesColor);
     }
   }
 }
@@ -60,8 +67,8 @@ bool PolylineNode::vertexesVisible() const { return m_vertexesVisible; }
 void PolylineNode::setVertexesVisible(bool vertexesVisible) {
   if (vertexesVisible != m_vertexesVisible) {
     m_vertexesVisible = vertexesVisible;
-    if (m_vertexesPointNode) {
-      m_vertexesPointNode->setIsVisible(m_vertexesVisible);
+    if (m_vertexesNode) {
+      setOpacityNodeVisibility(m_vertexesNode, vertexesVisible);
     }
   }
 }
@@ -72,8 +79,8 @@ void PolylineNode::setIsVisible(bool isVisible) {
   if (m_pathNode) {
     m_pathNode->setIsVisible(isVisible);
   }
-  if (m_vertexesPointNode) {
-    m_vertexesPointNode->setIsVisible(isVisible);
+  if (m_vertexesNode) {
+    setOpacityNodeVisibility(m_vertexesNode, isVisible);
   }
 }
 
@@ -177,26 +184,14 @@ void PolylineNode::updatePathNode(const cavc::Polyline<double> &pline, double ar
 }
 
 void PolylineNode::updateVertexesNode(const cavc::Polyline<double> &pline) {
-  const int plinePointVertexCount = static_cast<int>(pline.size());
-  if (!m_vertexesPointNode) {
-    m_vertexesPointNode = new FlatColorGeometryNode(true);
-    QSGGeometry *pointGeometry = m_vertexesPointNode->geometry();
-    pointGeometry->setDrawingMode(QSGGeometry::DrawPoints);
-    pointGeometry->setLineWidth(8);
-    m_vertexesPointNode->setColor(m_vertexesColor);
-    appendChildNode(m_vertexesPointNode);
-    m_vertexesPointNode->setFlag(QSGNode::OwnedByParent);
-    m_vertexesPointNode->setIsVisible(m_vertexesVisible);
+  if (!m_vertexesNode) {
+    m_vertexesNode = new PointSetNode();
+    appendChildNode(m_vertexesNode);
+    m_vertexesNode->setFlag(QSGNode::OwnedByParent);
+    m_vertexesNode->setColor(m_vertexesColor);
+    setOpacityNodeVisibility(m_vertexesNode, m_vertexesVisible);
   }
-  m_vertexesPointNode->geometry()->allocate(plinePointVertexCount, plinePointVertexCount);
 
-  std::uint32_t *pointVertexIndices = m_vertexesPointNode->geometry()->indexDataAsUInt();
-  for (int i = 0; i < plinePointVertexCount; ++i) {
-    pointVertexIndices[i] = static_cast<std::uint32_t>(i);
-  }
-  QSGGeometry::Point2D *pointVertexData = m_vertexesPointNode->geometry()->vertexDataAsPoint2D();
-  for (std::size_t i = 0; i < pline.size(); ++i) {
-    pointVertexData[i].set(static_cast<float>(pline[i].x()), static_cast<float>(pline[i].y()));
-  }
-  m_vertexesPointNode->markDirty(QSGNode::DirtyGeometry);
+  m_vertexesNode->clear();
+  m_vertexesNode->addPolylineVertexes(pline);
 }

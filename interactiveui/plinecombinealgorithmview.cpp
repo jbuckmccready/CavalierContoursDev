@@ -2,6 +2,7 @@
 #include "cavc/polylinecombine.hpp"
 #include "cavc/polylineintersects.hpp"
 #include "graphicshelpers.h"
+#include "pointsetnode.h"
 #include "polylinenode.h"
 #include <QSGGeometryNode>
 #include <QSGOpacityNode>
@@ -221,18 +222,16 @@ QSGNode *PlineCombineAlgorithmView::updatePaintNode(QSGNode *oldNode,
 
   if (m_showIntersects) {
     if (!m_intersectsNode) {
-      m_intersectsNode = gh::createSimpleGeomNode(static_cast<int>(intersectsAB.size()),
-                                                  Qt::darkCyan, 8, QSGGeometry::DrawPoints);
+      m_intersectsNode = new PointSetNode();
+      m_intersectsNode->setColor(Qt::darkCyan);
       rootNode->appendChildNode(m_intersectsNode);
     } else {
-      m_intersectsNode->geometry()->allocate(static_cast<int>(intersectsAB.size()));
+      m_intersectsNode->clear();
     }
-    QSGGeometry::Point2D *intrsVertexes = m_intersectsNode->geometry()->vertexDataAsPoint2D();
-    for (std::size_t i = 0; i < intersectsAB.size(); ++i) {
-      intrsVertexes[i].set(static_cast<float>(intersectsAB[i].pos.x()),
-                           static_cast<float>(intersectsAB[i].pos.y()));
+
+    for (auto const &intr : intersectsAB) {
+      m_intersectsNode->addPoint(intr.pos.x(), intr.pos.y());
     }
-    m_intersectsNode->markDirty(QSGNode::DirtyGeometry);
   } else if (m_intersectsNode) {
     rootNode->removeChildNode(m_intersectsNode);
     delete m_intersectsNode;
