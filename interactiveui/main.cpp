@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
   qmlRegisterType<PlineCombineAlgorithmView>("Polyline", 1, 0, "PlineCombineAlgorithmView");
   qmlRegisterType<PlineOffsetIslandsAlgorithmView>("Polyline", 1, 0, "PlineOffsetIslandsAlgorithmView");
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 
   QGuiApplication app(argc, argv);
   QFont defaultFont(app.font().family(), 12);

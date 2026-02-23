@@ -1,1 +1,5 @@
 *.user
+CMakePresets.json
+build
+.clangd
+.vscode
