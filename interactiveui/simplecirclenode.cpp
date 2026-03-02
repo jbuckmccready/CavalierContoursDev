@@ -5,7 +5,9 @@ SimpleCircleNode::SimpleCircleNode() : FlatColorGeometryNode(true) {
   m_xPos = 0;
   m_yPos = 0;
   m_radius = 1;
-  m_geometry.setDrawingMode(QSGGeometry::DrawTriangleFan);
+  // Draw vertex markers as hollow squares for stable rendering across backends.
+  m_geometry.setDrawingMode(QSGGeometry::DrawLineStrip);
+  m_geometry.setLineWidth(1.5f);
 }
 
 void SimpleCircleNode::setGeometry(qreal x, qreal y, qreal radius) {
@@ -16,8 +18,8 @@ void SimpleCircleNode::setGeometry(qreal x, qreal y, qreal radius) {
 }
 
 void SimpleCircleNode::updateGeometry() {
-  int surroundingVertexes = 12;
-  int vertexCount = surroundingVertexes + 2;
+  // 5 points (first repeated) to close the square with DrawLineStrip.
+  int vertexCount = 5;
 
   m_geometry.allocate(vertexCount, vertexCount);
   std::uint32_t *segVertexIndices = m_geometry.indexDataAsUInt();
@@ -26,12 +28,11 @@ void SimpleCircleNode::updateGeometry() {
   }
 
   QSGGeometry::Point2D *vertexData = m_geometry.vertexDataAsPoint2D();
-  vertexData[0].set(m_xPos, m_yPos);
-  for (int i = 1; i < vertexCount; ++i) {
-    double angle = cavc::utils::tau<double>() * static_cast<double>(i - 1) /
-                   static_cast<double>(surroundingVertexes);
-    vertexData[i].set(m_xPos + m_radius * std::cos(angle), m_yPos + m_radius * std::sin(angle));
-  }
+  vertexData[0].set(m_xPos - m_radius, m_yPos - m_radius);
+  vertexData[1].set(m_xPos + m_radius, m_yPos - m_radius);
+  vertexData[2].set(m_xPos + m_radius, m_yPos + m_radius);
+  vertexData[3].set(m_xPos - m_radius, m_yPos + m_radius);
+  vertexData[4].set(m_xPos - m_radius, m_yPos - m_radius);
 
   markDirty(QSGNode::DirtyGeometry);
 }

@@ -16,12 +16,22 @@ void GeometryCanvasItem::updateCoordMatrices(qreal width, qreal height) {
   m_uiToRealCoord = m_realToUICoord.inverted();
 }
 
+// QQuickItem renamed geometryChanged -> geometryChange in Qt 6.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void GeometryCanvasItem::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) {
+  Q_UNUSED(oldGeometry)
+  QQuickItem::geometryChange(newGeometry, oldGeometry);
+  updateCoordMatrices(newGeometry.width(), newGeometry.height());
+  update();
+}
+#else
 void GeometryCanvasItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) {
   Q_UNUSED(oldGeometry)
   QQuickItem::geometryChanged(newGeometry, oldGeometry);
   updateCoordMatrices(newGeometry.width(), newGeometry.height());
   update();
 }
+#endif
 
 QPointF GeometryCanvasItem::convertToGlobalUICoord(const cavc::Vector2<double> &pt) {
   return mapToGlobal(m_realToUICoord * QPointF(pt.x(), pt.y()));
